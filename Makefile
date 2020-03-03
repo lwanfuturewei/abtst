@@ -24,13 +24,10 @@ $(app) $(libs):
 	$(MAKE)  --directory=$@ 
 
 $(third_party):
-	$(info building argobots...)
-	if [ ! -d "$(ARGOBOTS_SRC)" ];then	\
-		git submodule init;		\
-	fi	
+	$(info building argobots with debug on...)
 	cd $(ARGOBOTS_SRC);		\
 	./autogen.sh;			\
-	./configure --prefix=$(ARGOBOTS_BIN);	\
+	./configure --prefix=$(ARGOBOTS_BIN) --enable-debug=most --enable-fast=O0 --disable-shareda;	\
 	make -j;	\
 	make -j install;	\
 	
