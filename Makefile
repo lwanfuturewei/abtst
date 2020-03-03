@@ -29,7 +29,6 @@ $(third_party):
 	./autogen.sh;			\
 	./configure --prefix=$(ARGOBOTS_BIN) --enable-debug=most --enable-fast=O0 --disable-shareda;	\
 	make -j;	\
-	make -j install;	\
 	
 $(app): $(libs)
 $(libs): $(third_party)
