@@ -1,0 +1,3 @@
+[submodule "argobots"]
+	path = argobots
+	url = https://github.com/pmodels/argobots.git

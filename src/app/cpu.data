@@ -1,0 +1,264 @@
+# started on Tue Feb 25 11:18:19 2020
+
+
+ Performance counter stats for 'system wide':
+
+CPU0                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU1                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU2                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU3                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU4                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU5                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU6                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU7                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU8                1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU9                1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU10               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU11               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU12               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU13               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU14               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU15               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU16               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU17               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU18               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU19               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU20               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU21               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU22               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU23               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU24               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU25               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU26               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU27               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU28               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU29               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU30               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU31               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU32               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU33               1,054.75 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU34               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU35               1,054.76 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU36               1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU37               1,054.77 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU38               1,054.78 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU39               1,054.78 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU40               1,054.79 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU41               1,054.79 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU42               1,054.80 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU43               1,054.80 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU44               1,054.81 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU45               1,054.81 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU46               1,054.82 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU47               1,054.82 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU48               1,054.83 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU49               1,054.83 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU50               1,054.83 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU51               1,054.84 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU52               1,054.84 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU53               1,054.85 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU54               1,054.85 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU55               1,054.85 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU56               1,054.86 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU57               1,054.86 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU58               1,054.87 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU59               1,054.87 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU60               1,054.88 msec cpu-clock                 #    0.997 CPUs utilized          
+CPU61               1,054.88 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU62               1,054.89 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU63               1,054.89 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU64               1,054.89 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU65               1,054.90 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU66               1,054.90 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU67               1,054.90 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU68               1,054.90 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU69               1,054.90 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU70               1,054.91 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU71               1,054.91 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU72               1,054.91 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU73               1,054.91 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU74               1,054.91 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU75               1,054.92 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU76               1,054.92 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU77               1,054.92 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU78               1,054.92 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU79               1,054.92 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU80               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU81               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU82               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU83               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU84               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU85               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU86               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU87               1,054.93 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU88               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU89               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU90               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU91               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU92               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU93               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU94               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU95               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU96               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU97               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU98               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU99               1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU100              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU101              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU102              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU103              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU104              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU105              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU106              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU107              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU108              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU109              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU110              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU111              1,054.94 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU112              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU113              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU114              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU115              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU116              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU117              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU118              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU119              1,054.95 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU120              1,054.96 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU121              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU122              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU123              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU124              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU125              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU126              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU127              1,054.97 msec cpu-clock                 #    0.998 CPUs utilized          
+CPU0             576,364,530      cycles                    #    0.546 GHz                    
+CPU1               9,983,545      cycles                    #    0.009 GHz                    
+CPU2             663,681,159      cycles                    #    0.629 GHz                    
+CPU3             582,167,738      cycles                    #    0.552 GHz                    
+CPU4             606,746,019      cycles                    #    0.575 GHz                    
+CPU5             688,838,120      cycles                    #    0.653 GHz                    
+CPU6             649,787,134      cycles                    #    0.616 GHz                    
+CPU7             610,403,789      cycles                    #    0.579 GHz                    
+CPU8             598,338,301      cycles                    #    0.567 GHz                    
+CPU9             605,750,394      cycles                    #    0.574 GHz                    
+CPU10              6,194,090      cycles                    #    0.006 GHz                    
+CPU11            105,021,555      cycles                    #    0.100 GHz                    
+CPU12                 51,937      cycles                    #    0.000 GHz                    
+CPU13                 50,032      cycles                    #    0.000 GHz                    
+CPU14                 50,633      cycles                    #    0.000 GHz                    
+CPU15                586,653      cycles                    #    0.001 GHz                    
+CPU16                 52,189      cycles                    #    0.000 GHz                    
+CPU17              1,056,623      cycles                    #    0.001 GHz                    
+CPU18             44,320,475      cycles                    #    0.042 GHz                    
+CPU19             60,254,347      cycles                    #    0.057 GHz                    
+CPU20             14,725,928      cycles                    #    0.014 GHz                    
+CPU21            550,811,049      cycles                    #    0.522 GHz                    
+CPU22              2,797,378      cycles                    #    0.003 GHz                    
+CPU23                 51,301      cycles                    #    0.000 GHz                    
+CPU24                 53,689      cycles                    #    0.000 GHz                    
+CPU25                 50,185      cycles                    #    0.000 GHz                    
+CPU26                 50,258      cycles                    #    0.000 GHz                    
+CPU27                 52,039      cycles                    #    0.000 GHz                    
+CPU28                 51,439      cycles                    #    0.000 GHz                    
+CPU29                 50,929      cycles                    #    0.000 GHz                    
+CPU30                 49,832      cycles                    #    0.000 GHz                    
+CPU31                 51,701      cycles                    #    0.000 GHz                    
+CPU32             34,135,045      cycles                    #    0.032 GHz                    
+CPU33             28,702,261      cycles                    #    0.027 GHz                    
+CPU34            673,823,237      cycles                    #    0.639 GHz                    
+CPU35            624,543,413      cycles                    #    0.592 GHz                    
+CPU36            680,734,467      cycles                    #    0.645 GHz                    
+CPU37            605,762,598      cycles                    #    0.574 GHz                    
+CPU38            604,935,171      cycles                    #    0.574 GHz                    
+CPU39            615,497,032      cycles                    #    0.584 GHz                    
+CPU40            632,052,423      cycles                    #    0.599 GHz                    
+CPU41            605,695,564      cycles                    #    0.574 GHz                    
+CPU42                 44,913      cycles                    #    0.000 GHz                    
+CPU43                 44,934      cycles                    #    0.000 GHz                    
+CPU44                 45,795      cycles                    #    0.000 GHz                    
+CPU45                 44,724      cycles                    #    0.000 GHz                    
+CPU46                 45,555      cycles                    #    0.000 GHz                    
+CPU47                 45,329      cycles                    #    0.000 GHz                    
+CPU48                202,001      cycles                    #    0.000 GHz                    
+CPU49                266,255      cycles                    #    0.000 GHz                    
+CPU50                265,355      cycles                    #    0.000 GHz                    
+CPU51                 45,547      cycles                    #    0.000 GHz                    
+CPU52              2,702,627      cycles                    #    0.003 GHz                    
+CPU53              3,400,107      cycles                    #    0.003 GHz                    
+CPU54              2,753,071      cycles                    #    0.003 GHz                    
+CPU55                333,821      cycles                    #    0.000 GHz                    
+CPU56                 45,409      cycles                    #    0.000 GHz                    
+CPU57                463,306      cycles                    #    0.000 GHz                    
+CPU58                 44,939      cycles                    #    0.000 GHz                    
+CPU59                 45,016      cycles                    #    0.000 GHz                    
+CPU60                 46,235      cycles                    #    0.000 GHz                    
+CPU61                 45,214      cycles                    #    0.000 GHz                    
+CPU62                 45,448      cycles                    #    0.000 GHz                    
+CPU63                 45,056      cycles                    #    0.000 GHz                    
+CPU64             31,492,249      cycles                    #    0.030 GHz                    
+CPU65                 49,265      cycles                    #    0.000 GHz                    
+CPU66            626,187,718      cycles                    #    0.594 GHz                    
+CPU67            689,983,814      cycles                    #    0.654 GHz                    
+CPU68            625,807,834      cycles                    #    0.593 GHz                    
+CPU69            643,853,907      cycles                    #    0.610 GHz                    
+CPU70            684,097,797      cycles                    #    0.649 GHz                    
+CPU71            652,219,789      cycles                    #    0.618 GHz                    
+CPU72            608,837,825      cycles                    #    0.577 GHz                    
+CPU73            647,269,066      cycles                    #    0.614 GHz                    
+CPU74                 49,248      cycles                    #    0.000 GHz                    
+CPU75                 49,663      cycles                    #    0.000 GHz                    
+CPU76                 49,715      cycles                    #    0.000 GHz                    
+CPU77             29,151,328      cycles                    #    0.028 GHz                    
+CPU78                451,372      cycles                    #    0.000 GHz                    
+CPU79                 49,329      cycles                    #    0.000 GHz                    
+CPU80                 50,152      cycles                    #    0.000 GHz                    
+CPU81                 49,666      cycles                    #    0.000 GHz                    
+CPU82                 49,221      cycles                    #    0.000 GHz                    
+CPU83                 49,524      cycles                    #    0.000 GHz                    
+CPU84                 49,477      cycles                    #    0.000 GHz                    
+CPU85                 50,304      cycles                    #    0.000 GHz                    
+CPU86                 49,370      cycles                    #    0.000 GHz                    
+CPU87                 49,152      cycles                    #    0.000 GHz                    
+CPU88                 49,331      cycles                    #    0.000 GHz                    
+CPU89                 49,796      cycles                    #    0.000 GHz                    
+CPU90                 49,277      cycles                    #    0.000 GHz                    
+CPU91                 49,558      cycles                    #    0.000 GHz                    
+CPU92                 49,657      cycles                    #    0.000 GHz                    
+CPU93                 49,240      cycles                    #    0.000 GHz                    
+CPU94                 48,608      cycles                    #    0.000 GHz                    
+CPU95                 48,684      cycles                    #    0.000 GHz                    
+CPU96             29,154,771      cycles                    #    0.028 GHz                    
+CPU97                897,331      cycles                    #    0.001 GHz                    
+CPU98            604,558,203      cycles                    #    0.573 GHz                    
+CPU99            655,834,896      cycles                    #    0.622 GHz                    
+CPU100           677,987,346      cycles                    #    0.643 GHz                    
+CPU101           662,656,126      cycles                    #    0.628 GHz                    
+CPU102           627,159,812      cycles                    #    0.595 GHz                    
+CPU103           661,636,380      cycles                    #    0.627 GHz                    
+CPU104           591,509,921      cycles                    #    0.561 GHz                    
+CPU105           627,547,947      cycles                    #    0.595 GHz                    
+CPU106            34,378,444      cycles                    #    0.033 GHz                    
+CPU107                51,382      cycles                    #    0.000 GHz                    
+CPU108                50,434      cycles                    #    0.000 GHz                    
+CPU109                49,887      cycles                    #    0.000 GHz                    
+CPU110                50,581      cycles                    #    0.000 GHz                    
+CPU111                50,320      cycles                    #    0.000 GHz                    
+CPU112                50,115      cycles                    #    0.000 GHz                    
+CPU113                49,998      cycles                    #    0.000 GHz                    
+CPU114                50,142      cycles                    #    0.000 GHz                    
+CPU115                49,824      cycles                    #    0.000 GHz                    
+CPU116                50,669      cycles                    #    0.000 GHz                    
+CPU117                49,897      cycles                    #    0.000 GHz                    
+CPU118                50,204      cycles                    #    0.000 GHz                    
+CPU119                50,966      cycles                    #    0.000 GHz                    
+CPU120                52,806      cycles                    #    0.000 GHz                    
+CPU121                50,816      cycles                    #    0.000 GHz                    
+CPU122                50,128      cycles                    #    0.000 GHz                    
+CPU123                50,288      cycles                    #    0.000 GHz                    
+CPU124                50,327      cycles                    #    0.000 GHz                    
+CPU125               434,163      cycles                    #    0.000 GHz                    
+CPU126                49,017      cycles                    #    0.000 GHz                    
+CPU127                49,177      cycles                    #    0.000 GHz                    
+
+       1.057523930 seconds time elapsed
+
