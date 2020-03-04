@@ -1,3 +1,4 @@
 [submodule "argobots"]
 	path = argobots
 	url = https://github.com/lwanfuturewei/argobots.git
+	branch = rc2
