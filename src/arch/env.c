@@ -10,23 +10,34 @@ abtst_env env;
 
 void abtst_init_env(void)
 {
+	int i;
 
-    /* Get the number of available cores in the system */
-    env.nr_cores = sysconf(_SC_NPROCESSORS_ONLN);
+	/* Get the number of available cores in the system */
+	env.nr_cores = sysconf(_SC_NPROCESSORS_ONLN);
 
-    /* Get NUMA info of the system */
-    env.nr_numas = 4;
+	/* Get NUMA info from the system */
+	env.nr_numas = 4;
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		env.numa_info[i].start_core = (env.nr_cores / env.nr_numas) * i;
+		env.numa_info[i].end_core = (env.nr_cores / env.nr_numas) * (i + 1) - 1;
+	}
 
-    env.stopping = false;
+	env.stopping = false;
 }
 
-void abtst_set_stopping(void)
+int abtst_env_get_numa_id(uint32_t core)
 {
-	env.stopping = true;
-}
+	int i;
 
-bool abtst_is_system_stopping(void)
-{
-	return (env.stopping);
-}
+	for (i = 0; i < env.nr_numas; i++)
+        {
+		if ((core >= env.numa_info[i].start_core) 
+			&& (core <= env.numa_info[i].end_core))
+		{
+			return i;
+		}
+	}
 
+	return -1;
+}

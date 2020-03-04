@@ -15,6 +15,8 @@
 #include "hash.h"
 
 
+abtst_mapping * get_hash_mapping_def(void);
+
 int abtst_init_mapping(int type, abtst_mapping *mapping, void *param)
 {
 	abtst_mapping *def;

@@ -27,7 +27,8 @@ typedef struct abtst_load_struct
 	uint32_t curr_rank;
 
 	bool migrating;
-	
+	int dest_rank;
+
 	ABT_pool pool;
 	ABT_sched sched;
 
@@ -46,8 +47,9 @@ static inline void abtst_load_update_curr_rank(abtst_load *load, int rank)
 	load->curr_rank = rank;
 }
 
-static inline void abtst_load_set_migrating(abtst_load *load, bool migrate)
+static inline void abtst_load_set_migrating(abtst_load *load, bool migrate, int dest)
 {
+	load->dest_rank = dest;
 	load->migrating = migrate;
 }
 
@@ -64,6 +66,15 @@ static inline void abtst_load_inc_started(abtst_load *load)
 static inline void abtst_load_inc_ended(abtst_load *load)
 {
 	load->pkt_ended++;
+}
+
+static inline int abtst_get_load_size(abtst_load *load)
+{
+        if (load->pkt_started > load->pkt_ended)
+        {
+                return (load->pkt_started - load->pkt_ended);
+        }
+        return 0;
 }
 
 int abtst_init_loads(abtst_loads *loads, abtst_streams *streams);

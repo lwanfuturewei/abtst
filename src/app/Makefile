@@ -5,7 +5,7 @@ $(info "TOP DIR" $(TOP_DIR))
 BUILD_DIR := $(OUT_DIR)/obj/app
 
 #Fill in
-FILES := abt_st.c
+FILES := main.c abt_st.c st.c
 
 SRCS := $(CUR_DIR)/$(FILES)
 OBJS := $(addprefix $(BUILD_DIR)/,$(patsubst %.c, %.o, $(FILES)))

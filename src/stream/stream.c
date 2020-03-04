@@ -38,7 +38,7 @@ static void apply_stream_config(abtst_streams *streams)
 	}
 }
 
-static int init_xstream(abtst_stream *stream, uint32_t init_rank)
+int init_xstream(abtst_stream *stream, uint32_t init_rank)
 {
 	int ret = 0;
 
@@ -188,5 +188,20 @@ void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry
 {
 	list_del_init(entry);
 	stream->nr_loads--;
+}
+
+int abtst_get_stream_ios(abtst_stream *stream)
+{
+	int count = 0;
+	struct list_head *pos, *n;
+	abtst_load *load;
+
+	list_for_each_safe(pos, n, &stream->load_q)
+	{
+		load = list_entry(pos, abtst_load, list);
+		count += abtst_get_load_size(load);
+	}
+
+	return count;
 }
 

@@ -27,7 +27,7 @@ $(third_party):
 	$(info building argobots with debug on...)
 	cd $(ARGOBOTS_SRC);		\
 	./autogen.sh;			\
-	./configure --enable-debug=most --enable-fast=O0 --disable-shareda;	\
+	./configure --enable-debug=most --enable-fast=O0 --disable-shareda --enable-affinity --enable-sched-sleep;	\
 	make -j;	\
 	
 $(app): $(libs)

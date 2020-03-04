@@ -1,0 +1,53 @@
+                 abt-st Release 0.1
+
+abt-st is a run-time for storage applications to utilize lightweight thread (LWT)
+for massive concurrency. It leverages Argobots as the low-level infrastructure.
+This release is a POC version that contains features of mapping, rebalance and 
+stackable schedulers.
+     ________________________________________________________________
+    |                                                                |
+    |      st:     Storage application                               |
+    |__________________________________________________________      |
+    |                                                          |     |
+    |      abt-st: mapping/rebalancing/scheduling policies     |     |
+    |__________________________________________________________|_____| 
+    |                                                                |
+    |      Argobots: a low-level threading and tasking Runtime       |
+    |________________________________________________________________|
+
+
+Many components in storage system use hash table/hash tree. To avoid spinlocks,
+these components use threads with core affinity, and each io is sent to one 
+specific core with its hash value (of key or content). This caused a big problem:
+it is very hard to rebalance between cores.
+
+abt-st aims at easy rebalance while keeping its lockless nature with following
+policies:
+    1) mapping: all IOs with contentions are mapped to same "load". IOs in the same
+                load run inside one xstream(core). Instructions inside same core 
+                are serialized and do not need locks.
+    2) rebalance: when the loads are not balanced between cores, the rebalancer
+                 will run to move "loads" between cores. abt-st knows NUMA configs
+                 and will consider rebalance inside NUMA first.
+    3) stackable schedulers: each "load" owns a sub-scheduler which schedules IOs
+                 inside the "load". The main scheduler for xstream schedules which
+                 load to run for all the "loads" in the same xstream.
+                 
+       
+                 
+Getting Started
+==================
+1) Get source code 
+   git clone https://github.com/lwanfuturewei/abtst
+2) build abt-st
+   make all
+3) run application
+   ./build/abtst
+
+     
+     
+TODO List
+==================
+1) rebalance between NUMAs
+2) get/set NUMA configs
+3) test cases 

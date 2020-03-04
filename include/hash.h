@@ -23,7 +23,6 @@ struct USER_KEY_S {
 };
 
 void set_hash_info(struct hash_info *hash, uint32_t bucketNum, uint32_t blockSz, HASH_FN hashFunc);
-abtst_mapping * get_hash_mapping_def(void);
 
 uint64_t abtst_hash_func(void *key);
 
