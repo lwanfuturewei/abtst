@@ -43,6 +43,7 @@ int abtst_finalize_streams(abtst_streams *streams);
 void abtst_free_streams(abtst_streams *streams);
 void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry);
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry);
+int abtst_get_stream_ios(abtst_stream *stream);
 
 
 #endif

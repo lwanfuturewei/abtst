@@ -10,7 +10,9 @@
 #include <assert.h>
 #include <time.h>
 
+#include "sched.h"
 #include "env.h"
+#include "load.h"
 #include "abt.h"
 
 
@@ -90,70 +92,120 @@ static int sched_init(ABT_sched sched, ABT_sched_config config)
     return abt_errno;
 }
 
+extern ABT_sched ABT_unit_get_sched(ABT_unit unit, ABT_pool pool);
+
 static void sched_run(ABT_sched sched)
 {
     uint32_t work_count = 0;
     void *data;
     sched_data *p_data;
     uint32_t event_freq;
-    int num_pools;
+    //int num_pools;
     ABT_pool *pools;
-    int i;
-    int run_cnt;
+    //int i;
+    int run_cnt, run_subpool;
     ABT_bool stop = ABT_FALSE;
-
+    size_t pool_size, subpool_size;
+    abtst_stream *stream;
     //ABTI_xstream *p_xstream = ABTI_local_get_xstream();
     //ABTI_sched *p_sched = ABTI_sched_get_ptr(sched);
 
     ABT_sched_get_data(sched, &data);
     p_data = sched_data_get_ptr(data);
     event_freq = p_data->event_freq;
-    num_pools  = p_data->num_pools;
+    //num_pools  = p_data->num_pools;
     pools      = p_data->pools;
+    stream     = (abtst_stream *)p_data->stream;
 
     while (1) {
         run_cnt = 0;
+        run_subpool = 0;
 
         /* Execute one work unit from the scheduler's pool */
-        for (i = 0; i < num_pools; i++) {
-            ABT_pool pool = pools[i];
-            //ABTI_pool *p_pool = ABTI_pool_get_ptr(pool);
+        //for (i = 0; i < num_pools; i++) {
+        while (1) {
+            ABT_pool pool = pools[0];
+            ABT_pool_get_size(pool, &pool_size);
+            
             /* Pop one work unit */
             ABT_unit unit;
-            
-	    ABT_pool_pop(pool, &unit);
+            ABT_pool_pop(pool, &unit);
             if (unit != ABT_UNIT_NULL) {
-                ABT_xstream_run_unit(unit, pool);
-                run_cnt++;
-		if (!abtst_is_system_stopping()) {
-			/* Check whether the unit should be migrated */
-			/* Currently all units are sub_sched */
-			ABT_pool_push(pool, unit);
-		}
-		break;
+
+                ABT_sched sub_sched = ABT_unit_get_sched(unit, pool);
+                if (sub_sched != ABT_SCHED_NULL) {
+                    ABT_pool sub_pool = sub_sched_get_pool(sub_sched);
+                    abtst_load *load = (abtst_load *)sub_sched_get_load(sub_sched);
+
+                    /* Check whether the unit should be migrated */
+                    if (abtst_load_is_migrating(load)) {
+                        if (load->curr_rank != load->dest_rank) {
+                            printf("migrate from %d to %d\n", load->curr_rank, load->dest_rank);
+                            abtst_remove_load_from_stream(stream, &load->list);
+                            abtst_stream *new_stream = stream + (int)(load->dest_rank - load->curr_rank);
+                            abtst_load_update_curr_rank(load, load->dest_rank);
+                            ABT_pool_push(new_stream->pool, unit);
+                            continue;
+                        } else {
+                            assert(stream->rank == load->dest_rank);
+                            printf("migrated to %d already\n", load->dest_rank);
+                            abtst_add_load_to_stream(stream, &load->list);
+                            abtst_load_set_migrating(load, false, -1);
+                        }
+                    }
+
+                    ABT_pool_get_size(sub_pool, &subpool_size);
+                    if (subpool_size) {
+                        run_cnt++;
+                    }
+
+                    /* Should not run sub_sched when there is no item in subpool */
+                    ABT_xstream_run_unit(unit, pool);
+                    run_subpool++;
+
+                    if (!abtst_is_system_stopping()) {
+                        ABT_pool_push(pool, unit);
+                    }
+
+                    if (/*run_cnt || */run_subpool >= pool_size) {
+                        break;
+                    }
+                } else {
+                    /* Normal thread/task */
+                    ABT_xstream_run_unit(unit, pool);
+                    run_cnt++;
+                    break;
+                }
+            } else {
+                break;
             }
         }
 
-	//if (run_cnt) printf("run_cnt %d\n", run_cnt);
+        //if (run_cnt) printf("run_cnt %d\n", run_cnt);
 
         if (++work_count >= event_freq) {
             ABT_xstream_check_events(sched);
-	    if (stop == ABT_FALSE) {
-            	ABT_sched_has_to_stop(sched, &stop);
-	    }
-            if (!run_cnt && stop == ABT_TRUE)
+            if (stop == ABT_FALSE) {
+                ABT_sched_has_to_stop(sched, &stop);
+            }
+            if (!run_cnt && !run_subpool && stop == ABT_TRUE) {
+                //ABT_pool pool = pools[0];
+                //size_t pool_size;
+                //ABT_pool_get_size(pool, &pool_size);
+                //printf("sched pool_size %lu ", pool_size);
                 break;
+            }
             work_count = 0;
-	    
-	    if (run_cnt) {
-		    p_data->sleep_time.tv_nsec = 100;
-	    }
-	    else if (p_data->sleep_time.tv_nsec < 10000 * 100) {
-		    p_data->sleep_time.tv_nsec *= 2;
-	    }
+        
+            if (run_cnt) {
+                p_data->sleep_time.tv_nsec = 100;
+            }
+            else if (p_data->sleep_time.tv_nsec < 10000 * 100) {
+                p_data->sleep_time.tv_nsec *= 2;
+            }
 
-            if (run_cnt == 0) nanosleep(&p_data->sleep_time, NULL);	    
-	    //SCHED_SLEEP(run_cnt, p_data->sleep_time);
+            if (run_cnt == 0) nanosleep(&p_data->sleep_time, NULL);        
+            //SCHED_SLEEP(run_cnt, p_data->sleep_time);
         }
     }
     printf("abtst basic sched exit\n");

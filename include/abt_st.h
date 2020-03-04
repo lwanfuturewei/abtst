@@ -23,5 +23,11 @@ typedef struct abtst_global_struct
 
 } abtst_global;
 
+
+int abtst_init(abtst_global *global, void *param);
+int abtst_finalize(abtst_global *global);
+void abtst_free(abtst_global *global);
+
+
 #endif
 

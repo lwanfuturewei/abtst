@@ -3,7 +3,7 @@ include ../../Common.mk
 TOP_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BUILD_DIR := $(OUT_DIR)/obj/librebalance
 
-FILES := rebalance.c
+FILES := rebalance.c reb_req.c
 
 SRCS := $(CUR_DIR)/$(FILES)
 OBJS := $(addprefix $(BUILD_DIR)/,$(patsubst %.c, %.o, $(FILES)))

@@ -60,10 +60,29 @@ void *sub_sched_get_load(ABT_sched sched)
     void *data;
     sched_data *p_data;
 
+    if (sched == ABT_SCHED_NULL) {
+        return NULL;
+    }
+
     ABT_sched_get_data(sched, &data);
     p_data = sub_sched_data_get_ptr(data);
 
     return (p_data->load);
+}
+
+ABT_pool sub_sched_get_pool(ABT_sched sched)
+{
+    void *data;
+    sched_data *p_data;
+
+    if (sched == ABT_SCHED_NULL) {
+        return ABT_POOL_NULL;
+    }
+
+    ABT_sched_get_data(sched, &data);
+    p_data = sub_sched_data_get_ptr(data);
+
+    return (p_data->pools[0]);
 }
 
 static int sub_sched_init(ABT_sched sched, ABT_sched_config config)
@@ -97,7 +116,7 @@ static int sub_sched_init(ABT_sched sched, ABT_sched_config config)
     return abt_errno;
 }
 
-#define MAX_BATCH_COUNT 5
+#define MAX_BATCH_COUNT 16
 static void sub_sched_run(ABT_sched sched)
 {
     void *data;
@@ -117,7 +136,7 @@ static void sub_sched_run(ABT_sched sched)
     pools      = p_data->pools;
 
     while (1) {
-	run_cnt = 0;
+        run_cnt = 0;
 
         /* Execute one work unit from the scheduler's pool */
         for (i = 0; i < num_pools; i++) {
@@ -126,23 +145,23 @@ static void sub_sched_run(ABT_sched sched)
             /* Pop one work unit */
             ABT_unit unit;
             
-	    ABT_pool_pop(pool, &unit);
+            ABT_pool_pop(pool, &unit);
             while (unit != ABT_UNIT_NULL) {
                 ABT_xstream_run_unit(unit, pool);
                 run_cnt++;
-		if (run_cnt >= MAX_BATCH_COUNT) {
-			break;
-		}
-		ABT_pool_pop(pool, &unit);
-    	    }
+                if (run_cnt >= MAX_BATCH_COUNT) {
+                    break;
+    	        }
+    	        ABT_pool_pop(pool, &unit);
+            }
         }
 
-	//if (run_cnt > 1) printf("run_cnt %d\n", run_cnt);
+        //if (run_cnt > 1) printf("run_cnt %d\n", run_cnt);
 
-	if (!run_cnt || (run_cnt >= MAX_BATCH_COUNT)) {
-		break;
-		//ABT_thread_yield();
-	}
+        if (!run_cnt || (run_cnt >= MAX_BATCH_COUNT)) {
+    	    break;
+    	    //ABT_thread_yield();
+        }
     }
 }
 

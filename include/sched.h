@@ -26,6 +26,7 @@ ABT_sched_def *abtst_sub_sched_get_def(void);
 int abtst_init_sub_sched(ABT_sched *sched, ABT_pool *pool, void *load);
 void abtst_free_sub_sched(ABT_sched *sched);
 void *sub_sched_get_load(ABT_sched sched);
+ABT_pool sub_sched_get_pool(ABT_sched sched);
 
 
 #endif
