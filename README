@@ -39,7 +39,11 @@ Getting Started
 ==================
 1) Get source code 
    git clone https://github.com/lwanfuturewei/abtst
-2) build abt-st
+   git submodule init
+   git submodule update
+   cd argobots
+   git checkout rc2
+2) build abt-st under abtst directory
    make all
 3) run application
    ./build/abtst
