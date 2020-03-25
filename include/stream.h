@@ -13,6 +13,12 @@
 #include "list.h"
 
 
+typedef struct abtst_stream_stat_s
+{
+	uint32_t total_qdepth;
+	uint32_t sleep_nsec;
+} abtst_stream_stat;
+
 typedef struct abtst_stream_struct
 {
 	uint32_t rank;
@@ -23,6 +29,8 @@ typedef struct abtst_stream_struct
 
 	struct list_head load_q;
 	uint32_t nr_loads;
+
+	abtst_stream_stat stat;
 } abtst_stream;
 
 typedef struct abtst_streams_struct 
@@ -36,6 +44,33 @@ typedef struct abtst_streams_struct
 	//ABT_pool *pools;
 
 } abtst_streams;
+
+
+static inline void abtst_stream_init_stat(abtst_stream *stream)
+{
+	stream->stat.total_qdepth = 0;
+	stream->stat.sleep_nsec = 0;
+}
+
+static inline uint32_t abtst_stream_get_qdepth(abtst_stream *stream)
+{
+        return stream->stat.total_qdepth;
+}
+
+static inline void abtst_stream_update_qdepth(abtst_stream *stream, uint32_t qdepth)
+{
+        stream->stat.total_qdepth = qdepth;
+}
+
+static inline uint32_t abtst_stream_get_sleep_time(abtst_stream *stream)
+{
+        return stream->stat.sleep_nsec;
+}
+
+static inline void abtst_stream_update_sleep_time(abtst_stream *stream, uint32_t sleep_nsec)
+{
+        stream->stat.sleep_nsec += sleep_nsec;
+}
 
 
 int abtst_init_streams(abtst_streams *streams);

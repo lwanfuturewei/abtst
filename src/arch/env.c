@@ -21,9 +21,13 @@ void abtst_init_env(void)
 	{
 		env.numa_info[i].start_core = (env.nr_cores / env.nr_numas) * i;
 		env.numa_info[i].end_core = (env.nr_cores / env.nr_numas) * (i + 1) - 1;
+	
+		env.numa_stat[i].used_cores = 0;
+		env.numa_stat[i].avg_qdepth = 0;
 	}
 
 	env.stopping = false;
+	env.rebalance_enabled = false;
 }
 
 int abtst_env_get_numa_id(uint32_t core)

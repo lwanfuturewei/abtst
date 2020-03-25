@@ -45,6 +45,7 @@ int init_xstream(abtst_stream *stream, uint32_t init_rank)
 	stream->rank = init_rank;
 	INIT_LIST_HEAD(&stream->load_q);
 	stream->nr_loads = 0;
+	abtst_stream_init_stat(stream);
 
 	/* For the main stream */
 	if (init_rank == 0)

@@ -141,7 +141,7 @@ static void sched_run(ABT_sched sched)
                     if (abtst_load_is_migrating(load)) {
                         if (load->curr_rank != load->dest_rank) {
                             printf("migrate from %d to %d\n", load->curr_rank, load->dest_rank);
-                            abtst_remove_load_from_stream(stream, &load->list);
+                            //abtst_remove_load_from_stream(stream, &load->list);
                             abtst_stream *new_stream = stream + (int)(load->dest_rank - load->curr_rank);
                             abtst_load_update_curr_rank(load, load->dest_rank);
                             ABT_pool_push(new_stream->pool, unit);
@@ -149,7 +149,7 @@ static void sched_run(ABT_sched sched)
                         } else {
                             assert(stream->rank == load->dest_rank);
                             printf("migrated to %d already\n", load->dest_rank);
-                            abtst_add_load_to_stream(stream, &load->list);
+                            //abtst_add_load_to_stream(stream, &load->list);
                             abtst_load_set_migrating(load, false, -1);
                         }
                     }
@@ -204,7 +204,11 @@ static void sched_run(ABT_sched sched)
                 p_data->sleep_time.tv_nsec *= 2;
             }
 
-            if (run_cnt == 0) nanosleep(&p_data->sleep_time, NULL);        
+            if (run_cnt == 0)
+            {
+                nanosleep(&p_data->sleep_time, NULL);
+                abtst_stream_update_sleep_time(stream, p_data->sleep_time.tv_nsec);
+            } 
             //SCHED_SLEEP(run_cnt, p_data->sleep_time);
         }
     }
