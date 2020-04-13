@@ -184,19 +184,24 @@ static int reb_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 	int count = 0;
 	int i;
 	struct list_head *pos, *n;
-	abtst_load *load;
-	int lsize;
+	abtst_load *load, *min_load = NULL;
+	int lsize, min_lsize = 0;
 
 	from = p2->stream;
 	to = p1->stream;
 
 	/* Check whether rebalance is needed */
-	if (p1->ios >= avg || p2->ios <= avg)
+	if ((p1->ios >= avg) || (p2->ios <= avg))
 	{
 		return -1;
 	}
 
 	if (p2->ios < MIN_IOS_TO_START_REB)
+	{
+		return -1;
+	}
+
+	if (p2->ios < (p1->ios * 2))
 	{
 		return -1;
 	}
@@ -209,13 +214,42 @@ static int reb_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 		{
 			continue;
 		}
+
 		lsize = abtst_get_load_size(load);
-		if (lsize && (ios + lsize <= avg))
+		if (!lsize)
+		{
+			continue;
+		}
+		if (!min_lsize || (lsize < min_lsize))
+		{
+			min_lsize = lsize;
+			min_load = load;
+		}
+
+		if (lsize && ((ios + lsize) <= avg))
 		{
 			/* the load is chosen for migration */
 			ios += lsize;
 			mloads[count++] = load;
 		}
+
+		if ((ios + lsize) == avg)
+		{
+			break;
+		}
+	}
+
+	if (!count && min_lsize)
+	{
+		/* Need to consider the case when from stream have a small
+		 * number of large loads.
+		 */
+		if ((p1->ios + min_lsize) < (p2->ios - min_lsize) * 1.5)
+		{
+			ios += min_lsize;
+			mloads[count++] = min_load;
+		}
+
 	}
 
 	if (!count)
