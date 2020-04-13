@@ -45,3 +45,16 @@ int abtst_env_get_numa_id(uint32_t core)
 
 	return -1;
 }
+
+void print_numas(void)
+{
+	int i;
+
+	for (i = 0; i < env.nr_numas; i++)
+        {
+		printf("numa %d, cores %4d - %4d, used %4d, qdepth %4d\n",
+			i, env.numa_info[i].start_core, env.numa_info[i].end_core,
+			env.numa_stat[i].used_cores, env.numa_stat[i].avg_qdepth);
+        }
+}
+

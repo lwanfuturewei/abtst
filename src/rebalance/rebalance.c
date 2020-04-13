@@ -34,6 +34,7 @@ typedef struct sort_param_s
 
 static int cmp_streams(const void *p1, const void *p2);
 extern int init_xstream(abtst_stream *stream, uint32_t init_rank);
+static void abtst_reb_update_numa_stat(abtst_global *global, int numa_id);
 
 
 void abtst_reb_process_add_core(abtst_global *global, int core)
@@ -176,10 +177,9 @@ void abtst_reb_process_remove_core(abtst_global *global, int core)
  * 3) whether to_stream is a totally new stream;
  * 4) etc.
  */
-static void reb_streams(sort_param *p1, sort_param *p2)
+static int reb_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 {
 	abtst_stream *from, *to;
-	int avg = (p1->ios + p2->ios)/2;
 	int ios = p1->ios;
 	int count = 0;
 	int i;
@@ -191,14 +191,14 @@ static void reb_streams(sort_param *p1, sort_param *p2)
 	to = p1->stream;
 
 	/* Check whether rebalance is needed */
-	if (p2->ios <= p1->ios)
+	if (p1->ios >= avg || p2->ios <= avg)
 	{
-		return;
+		return -1;
 	}
 
-	if (to->nr_loads && (p2->ios < MIN_IOS_TO_START_REB))
+	if (p2->ios < MIN_IOS_TO_START_REB)
 	{
-		return;
+		return -1;
 	}
 
 	abtst_load **mloads = (abtst_load **)malloc(from->nr_loads * sizeof(abtst_load *));
@@ -210,12 +210,17 @@ static void reb_streams(sort_param *p1, sort_param *p2)
 			continue;
 		}
 		lsize = abtst_get_load_size(load);
-		if (lsize && (ios + lsize < avg))
+		if (lsize && (ios + lsize <= avg))
 		{
 			/* the load is chosen for migration */
 			ios += lsize;
 			mloads[count++] = load;
 		}
+	}
+
+	if (!count)
+	{
+		return -1;
 	}
 
 	for (i = 0; i < count; i++)
@@ -229,6 +234,8 @@ static void reb_streams(sort_param *p1, sort_param *p2)
 	abtst_stream_update_qdepth(from, p2->ios - (ios - p1->ios));
 	abtst_stream_update_qdepth(to, ios);
 	free(mloads);
+
+	return 0;
 }
 
 static int cmp_streams(const void *p1, const void *p2)
@@ -245,7 +252,7 @@ static int cmp_streams(const void *p1, const void *p2)
 	}
 }
 
-static sort_param * sort_streams(abtst_global *global, int numa_id, int *used_streams)
+static sort_param * sort_streams(abtst_global *global, int numa_id)
 {
 	abtst_numa *numa_info = abtst_get_numa_info(numa_id);
 	int i;
@@ -281,68 +288,77 @@ static sort_param * sort_streams(abtst_global *global, int numa_id, int *used_st
 	/* Sort params */
 	qsort(params, cnt, sizeof(sort_param), cmp_streams);
 
-	*used_streams = cnt;
 	return params;
 }
 
 static void reb_in_numa(abtst_global *global, int numa_id)
 {
-	int i;
-	int cnt = 0;
 	sort_param *params;
+	abtst_numa_stat *numa_stat = abtst_get_numa_stat(numa_id);
+	uint32_t loop = 0;
+	int ret;
 
-	params = sort_streams(global, numa_id, &cnt);
-	if (!params)
+	while (++loop < numa_stat->used_cores)
 	{
-		return;
-	}
+		params = sort_streams(global, numa_id);
+		if (!params)
+		{
+			return;
+		}
 
-	for (i = 0; i < min(cnt/2, REB_STREAMS); i++)
-	{
-		reb_streams(&params[i], &params[cnt - 1 - i]);
+		ret = reb_streams(&params[0], &params[numa_stat->used_cores - 1], numa_stat->avg_qdepth);
+		free(params);
+		if (ret < 0)
+		{
+			break;
+		}
 	}
-
-	free(params);
 }
 
-static void reb_numas(abtst_global *global, int from, int to, uint32_t capacity)
+static void reb_numas(abtst_global *global, int from, int to, uint32_t avg_qdepth)
 {
-	int i;
-	int cnt_from, cnt_to;
 	sort_param *params_from, *params_to;
+	abtst_numa_stat *numa_stat_from = abtst_get_numa_stat(from);
+	abtst_numa_stat *numa_stat_to = abtst_get_numa_stat(to);
+	uint32_t loop = 0;
+	int ret;
 
-	params_from = sort_streams(global, from, &cnt_from);
-	if (!params_from)
+	while (++loop < min(numa_stat_from->used_cores, numa_stat_to->used_cores))
 	{
-		return;
-	}
+		params_from = sort_streams(global, from);
+		if (!params_from)
+		{
+			return;
+		}
 
-	params_to = sort_streams(global, to, &cnt_to);
-	if (!params_to)
-	{
+		params_to = sort_streams(global, to);
+		if (!params_to)
+		{
+			free(params_from);
+			return;
+		}
+
+		ret = reb_streams(&params_to[0], &params_from[numa_stat_from->used_cores - 1], avg_qdepth);
 		free(params_from);
-		return;
-	}
+		free(params_to);
+		if (ret < 0)
+		{
+			break;
+		}
 
-	for (i = 0; i < min(cnt_from, cnt_to); i++)
-	{
-		reb_streams(&params_to[i], &params_from[cnt_from - 1 - i]);
+		abtst_reb_update_numa_stat(global, from);
+		abtst_reb_update_numa_stat(global, to);
 	}
-
-	free(params_from);
-	free(params_to);
 }
 
 static void reb_between_numas(abtst_global *global)
 {
 	int i;
 	int from = -1, to = -1;
-	uint32_t max_qdepth = 0  ;
+	uint32_t max_qdepth = 0, min_qdepth;
 	uint32_t total_cores = 0;
 	uint32_t total_qdepth = 0;
 	uint32_t avg_qdepth;
-	uint32_t need_capacity;
-	uint32_t capacity, max_capacity = 0;
 	abtst_numa_stat *numa_stat;
 
 	if (!abtst_is_numa_rebalance_enabled())
@@ -351,14 +367,23 @@ static void reb_between_numas(abtst_global *global)
 	}
 
 
-	/* We choose the numa with highest qdepth to rebalance from */
+	/* We choose the numa with highest/lowest qdepth to rebalance from/to */
 	for (i = 0; i < env.nr_numas; i++)
 	{
 		numa_stat = abtst_get_numa_stat(i);
-		if (numa_stat->avg_qdepth > max_qdepth)
+		if (!max_qdepth)
+		{
+			max_qdepth = min_qdepth = numa_stat->avg_qdepth;
+		}
+		else if (numa_stat->avg_qdepth > max_qdepth)
 		{
 			max_qdepth = numa_stat->avg_qdepth;
 			from = i;
+		}
+		else if (numa_stat->avg_qdepth < min_qdepth)
+		{
+			min_qdepth = numa_stat->avg_qdepth;
+			to = i;
 		}
 		total_cores += numa_stat->used_cores;
 		total_qdepth += numa_stat->used_cores * numa_stat->avg_qdepth;
@@ -371,30 +396,7 @@ static void reb_between_numas(abtst_global *global)
 		return;
 	}
 
-	/* Find the numa to rebalance to */
-	numa_stat = abtst_get_numa_stat(from);
-	need_capacity = numa_stat->used_cores * (max_qdepth - avg_qdepth);
-	for (i = 0; i < env.nr_numas; i++)
-	{
-		numa_stat = abtst_get_numa_stat(i);
-		if (numa_stat->avg_qdepth >= avg_qdepth)
-		{
-			continue;
-		}
-
-		capacity = (avg_qdepth - numa_stat->avg_qdepth) * numa_stat->used_cores;
-		if (capacity > max_capacity)
-		{
-			max_capacity = capacity;
-			to = i;
-		}
-	}
-	if (to < 0)
-	{
-		return;
-	}
-
-	reb_numas(global, from, to, need_capacity);
+	reb_numas(global, from, to, avg_qdepth);
 }
 
 /*
@@ -403,16 +405,39 @@ static void reb_between_numas(abtst_global *global)
  */
 static inline uint32_t reb_calc_qdepth(abtst_stream *stream, uint32_t ios)
 {
-	return ((ios / 2) + (abtst_stream_get_qdepth(stream) / 2));
+	//return ((ios / 2) + (abtst_stream_get_qdepth(stream) / 2));
+	return ios;
+}
+
+static void abtst_reb_update_numa_stat(abtst_global *global, int numa_id)
+{
+	abtst_stream *stream;
+	uint32_t qdepth = 0;
+	int j;
+	abtst_numa *numa_info;
+	uint32_t cnt = 0;
+
+	numa_info = abtst_get_numa_info(numa_id);
+
+	for (j = numa_info->start_core; j <= numa_info->end_core; j++)
+	{
+		stream = &global->streams.streams[j];
+		if (!stream->used)
+		{
+			continue;
+		}
+		qdepth += abtst_stream_get_qdepth(stream);
+		cnt++;
+	}
+
+	abtst_set_numa_stat(numa_id, cnt, qdepth/cnt);
 }
 
 static void abtst_reb_update_stat(abtst_global *global)
 {
-	int i, j;
+	int i;
 	uint32_t ios;
 	abtst_stream *stream;
-	abtst_numa *numa_info;
-	uint32_t cnt = 0;
 	uint32_t qdepth;
 
 	for (i = 0; i < env.nr_cores; i++)
@@ -428,23 +453,9 @@ static void abtst_reb_update_stat(abtst_global *global)
 		abtst_stream_update_qdepth(stream, qdepth);
 	}
 
-	qdepth = 0;
 	for (i = 0; i < env.nr_numas; i++)
 	{
-		numa_info = abtst_get_numa_info(i);
-
-		for (j = numa_info->start_core; j <= numa_info->end_core; j++)
-		{
-			stream = &global->streams.streams[j];
-			if (!stream->used)
-			{
-				continue;
-			}
-			qdepth += abtst_stream_get_qdepth(stream);
-			cnt++;
-		}
-
-		abtst_set_numa_stat(i, cnt, qdepth/cnt);
+		abtst_reb_update_numa_stat(global, i);
 	}
 
 }

@@ -206,3 +206,17 @@ int abtst_get_stream_ios(abtst_stream *stream)
 	return count;
 }
 
+void print_streams(abtst_streams *streams)
+{
+	int i;
+	abtst_stream *stream;
+
+	stream = &streams->streams[0];
+	for (i = 0; i < streams->max_xstreams; i++, stream++)
+	{
+		if (!stream->used) {
+			continue;
+		}
+	        printf("stream %4d, loads %4d, qdepth %8d\n", i, stream->nr_loads, stream->stat.total_qdepth);
+	}
+}

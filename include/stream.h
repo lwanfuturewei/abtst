@@ -30,6 +30,8 @@ typedef struct abtst_stream_struct
 	struct list_head load_q;
 	uint32_t nr_loads;
 
+	bool blocking;
+
 	abtst_stream_stat stat;
 } abtst_stream;
 
@@ -72,6 +74,16 @@ static inline void abtst_stream_update_sleep_time(abtst_stream *stream, uint32_t
         stream->stat.sleep_nsec += sleep_nsec;
 }
 
+static inline bool abtst_stream_is_blocking(abtst_stream *stream)
+{
+	return stream->blocking;
+}
+
+static inline void abtst_stream_set_blocking(abtst_stream *stream, bool blocking)
+{
+	stream->blocking = blocking;
+}
+
 
 int abtst_init_streams(abtst_streams *streams);
 int abtst_finalize_streams(abtst_streams *streams);
@@ -79,6 +91,7 @@ void abtst_free_streams(abtst_streams *streams);
 void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry);
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry);
 int abtst_get_stream_ios(abtst_stream *stream);
+void print_streams(abtst_streams *streams);
 
 
 #endif

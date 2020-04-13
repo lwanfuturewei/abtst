@@ -1,6 +1,7 @@
 /*
  * See COPYRIGHT in top-level directory.
  */
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -120,6 +121,11 @@ static void sched_run(ABT_sched sched)
     while (1) {
         run_cnt = 0;
         run_subpool = 0;
+
+        while (abtst_stream_is_blocking(stream))
+        {
+            sleep(1);
+        }
 
         /* Execute one work unit from the scheduler's pool */
         //for (i = 0; i < num_pools; i++) {
