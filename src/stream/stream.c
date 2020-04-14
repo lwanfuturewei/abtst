@@ -14,28 +14,40 @@
 #include "env.h"
 #include "stream.h"
 #include "sched.h"
+#include "abt_st.h"
 
 
-static int init_partitions[] =
-{
-	 2, 3, 4, 5, 6, 7, 8, 9,		/* Numa 0 */
-	//34,35,36,37,38,39,40,41,		/* Numa 1 */
-	//66,67,68,69,70,71,72,73,		/* Numa 2 */
-	//98,99,100,101,102,103,104,105,		/* Numa 3 */
-};
-
-static void apply_stream_config(abtst_streams *streams)
+static int apply_stream_config(abtst_streams *streams, int nr_partitions, abtst_partition *partitions)
 {
 	abtst_stream *stream;
-	int i;
+	int i, j;
+	int cnt = 0;
+	abtst_partition *partition = partitions;
+	int core;
 
-	streams->init_xstreams = streams->nr_xstreams = sizeof(init_partitions) / sizeof(int);
-
-	stream = streams->streams;
-	for (i = 0; i < streams->init_xstreams; i++)
+	for (j = 0; j < nr_partitions; j++, partition++)
 	{
-		stream[init_partitions[i]].used = true;
+		stream = streams->streams;
+		for (i = 0; i < partition->nr_cores; i++)
+		{
+			core = partition->partition_cores[i];
+			if (streams->partition_map[core] >= 0)
+			{
+				printf("apply_stream_config core %d already in partition %d\n",
+						core, streams->partition_map[core]);
+				return -1;
+			}
+
+			streams->partition_map[core] = partition->partition_id;
+			stream[core].used = true;
+			stream[core].part_id = partition->partition_id;
+			cnt++;
+		}
 	}
+
+	streams->init_xstreams = streams->nr_xstreams = cnt;
+
+	return 0;
 }
 
 int init_xstream(abtst_stream *stream, uint32_t init_rank)
@@ -56,11 +68,11 @@ int init_xstream(abtst_stream *stream, uint32_t init_rank)
 			return -1;
 		}
 		ret = ABT_xstream_get_main_pools(stream->xstream, 1, &stream->pool);
-                if (ret)
-                {
-                        printf("ABT_xstream_get_main_pools error %d\n", ret);
-                        return -1;
-                }
+		if (ret)
+		{
+			printf("ABT_xstream_get_main_pools error %d\n", ret);
+			return -1;
+		}
 		return 0;
 	}
 
@@ -73,17 +85,17 @@ int init_xstream(abtst_stream *stream, uint32_t init_rank)
 	ret =  ABT_pool_create_basic(ABT_POOL_FIFO, ABT_POOL_ACCESS_MPSC,
                                       ABT_TRUE, &stream->pool);
 	if (ret)
-        {
-                printf("ABT_pool_create error %d\n", ret);
-                return -1;
-        }
+	{
+		printf("ABT_pool_create error %d\n", ret);
+		return -1;
+	}
 
 	ret = abtst_init_sched(&stream->sched, &stream->pool, (void *)stream);
-        if (ret)
-        {
-                printf("abtst_init_sched error %d\n", ret);
-                return -1;
-        }
+	if (ret)
+	{
+		printf("abtst_init_sched error %d\n", ret);
+		return -1;
+	}
 
 	ret = ABT_xstream_create_with_rank(stream->sched, stream->rank, &stream->xstream);
 	if (ret)
@@ -95,34 +107,46 @@ int init_xstream(abtst_stream *stream, uint32_t init_rank)
 	return 0;
 }
 
-int abtst_init_streams(abtst_streams *streams)
+int init_partition_map(abtst_streams *streams)
 {
+	streams->partition_map = malloc(streams->max_xstreams * sizeof(int));
+	if (!streams->partition_map)
+	{
+		printf("init_partition_map error\n");
+		return -1;
+	}
+
+	memset(streams->partition_map, 0xff, streams->max_xstreams * sizeof(int));
+	return 0;
+}
+
+int abtst_init_streams(abtst_streams *streams, void *p_global)
+{
+	abtst_global *global = (abtst_global *)p_global;
 	int i;
 	int ret;
 	abtst_stream *stream;
 
-        streams->max_xstreams = env.nr_cores;
-        streams->init_xstreams = streams->nr_xstreams = 1;
+	streams->max_xstreams = env.nr_cores;
+	streams->init_xstreams = streams->nr_xstreams = 1;
 
-	streams->streams = calloc(streams->max_xstreams, sizeof(abtst_stream));
-	if (!streams->streams) {
+	ret = init_partition_map(streams);
+	if (ret)
+	{
 		return -1;
 	}
 
-	apply_stream_config(streams);
+	streams->streams = calloc(streams->max_xstreams, sizeof(abtst_stream));
+	if (!streams->streams) {
+		free(streams->partition_map);
+		return -1;
+	}
 
-        /* Create pools */
-        //streams->pools = create_pools(streams->max_xstreams);
-	//if (!streams->pools)
-	//{
-	//	goto error;
-	//}
-
-	//streams->scheds = abtst_init_sched(streams->max_xstreams);
-        //if (!streams->scheds)
-        //{
-        //        goto error;
-        //}
+	ret = apply_stream_config(streams, global->nr_partitions, global->partitions);
+	if (ret)
+	{
+		goto error;
+	}
 
 	stream = streams->streams;
 	for (i = 0; i < streams->max_xstreams; i++, stream++)
@@ -137,7 +161,8 @@ int abtst_init_streams(abtst_streams *streams)
 
 error:
 	free(streams->streams);
-        return -1;
+	free(streams->partition_map);
+	return -1;
 }
 
 int abtst_finalize_streams(abtst_streams *streams)
@@ -151,7 +176,7 @@ int abtst_finalize_streams(abtst_streams *streams)
 	}
 
 	/* Join xstreams */
-        stream = &streams->streams[1];
+	stream = &streams->streams[1];
 	for (i = 1; i < streams->max_xstreams; i++, stream++)
 	{
 		if (stream->xstream) {
@@ -176,6 +201,7 @@ void abtst_free_streams(abtst_streams *streams)
 {
 	if (streams->streams) {
 		free(streams->streams);
+		free(streams->partition_map);
 	}
 }
 

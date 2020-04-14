@@ -20,6 +20,8 @@ typedef struct abtst_load_struct
 {
 	struct list_head list;
 	
+	int load_id;
+
 	uint64_t pkt_started;
 	uint64_t pkt_ended;
 
@@ -36,8 +38,9 @@ typedef struct abtst_load_struct
 
 typedef struct abtst_loads_struct 
 {
-        uint32_t nr_loads;
-        abtst_load *loads;
+	int partition_id;
+	uint32_t nr_loads;
+	abtst_load *loads;
 
 } abtst_loads;
 

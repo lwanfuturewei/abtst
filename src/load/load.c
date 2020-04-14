@@ -34,37 +34,37 @@ static int init_load(abtst_load *load, uint32_t rank)
 	}
 
 	//ret = ABT_sched_create_basic(ABT_SCHED_DEFAULT, 1, &load->pool,
-        //                         ABT_SCHED_CONFIG_NULL, &load->sched);
+	//                         ABT_SCHED_CONFIG_NULL, &load->sched);
 	ret = abtst_init_sub_sched(&load->sched, &load->pool, (void *)load);
 	if (ret)
-        {
-                printf("abtst_init_sub_sched error %d\n", ret);
-                return ret;
-        }
+	{
+		printf("abtst_init_sub_sched error %d\n", ret);
+		return ret;
+	}
 
 	return 0;
 }
 
-static abtst_stream * find_next_stream(abtst_streams *streams, int start)
+static abtst_stream * find_next_stream(abtst_streams *streams, int partition_id, int start)
 {
 	int s = start % streams->max_xstreams;
 	int i;
 
 	for (i = s; i < streams->max_xstreams; i++)
 	{
-		if (streams->streams[i].used)
+		if (streams->streams[i].used && (partition_id == streams->streams[i].part_id))
 		{
 			return &streams->streams[i];
 		}
 	}
 
-        for (i = 0; i < s; i++)
-        {
-                if (streams->streams[i].used)
-                {
-                        return &streams->streams[i];
-                }
-        }
+	for (i = 0; i < s; i++)
+	{
+		if (streams->streams[i].used && (partition_id == streams->streams[i].part_id))
+		{
+			return &streams->streams[i];
+		}
+	}
 
 	return NULL;
 }
@@ -75,8 +75,9 @@ int abtst_init_loads(abtst_loads *loads, abtst_streams *streams)
 	int start = 0;
 	abtst_stream *stream;
 	int ret;
+	abtst_load *load;
 
-	loads->nr_loads = env.nr_cores * LOADS_PER_XSTREAM;
+	//loads->nr_loads = env.nr_cores * LOADS_PER_XSTREAM;
 	loads->loads  = calloc(loads->nr_loads, sizeof(abtst_load));
 	if (!loads->loads) {
 		return -1;
@@ -84,7 +85,7 @@ int abtst_init_loads(abtst_loads *loads, abtst_streams *streams)
 
 	for (i = 0; i < loads->nr_loads; i++)
 	{
-		stream = find_next_stream(streams, start);
+		stream = find_next_stream(streams, loads->partition_id, start);
 		if (!stream)
 		{
 			printf("No stream in use!\n");
@@ -92,19 +93,21 @@ int abtst_init_loads(abtst_loads *loads, abtst_streams *streams)
 		}
 		start = stream->rank + 1;
 		
-		ret = init_load(&loads->loads[i], stream->rank);
+		load = &loads->loads[i];
+		load->load_id = i;
+		ret = init_load(load, stream->rank);
 		if (ret) 
 		{
 			return -1;
 		}
 
-		ret = ABT_pool_add_sched(stream->pool, loads->loads[i].sched);
+		ret = ABT_pool_add_sched(stream->pool, load->sched);
 		if (ret)
-                {
-                        return -1;
-                }
+		{
+			return -1;
+		}
 
-		abtst_add_load_to_stream(stream, &loads->loads[i].list);
+		abtst_add_load_to_stream(stream, &load->list);
 	}
 
 	return 0;
@@ -112,8 +115,8 @@ int abtst_init_loads(abtst_loads *loads, abtst_streams *streams)
 
 void abtst_free_loads(abtst_loads *loads)
 {
-        int i;
-        abtst_load *load;
+	int i;
+	abtst_load *load;
 
 	if (!loads->loads)
 	{
@@ -136,14 +139,9 @@ int map_load_to_stream(abtst_loads *loads, uint32_t load)
 {
 	abtst_load *p_load;
 
-        p_load = (abtst_load *)loads->loads;
-        p_load += load;
+	p_load = (abtst_load *)loads->loads;
+	p_load += load;
 
-        if (p_load->migrating) {
-                /* put into waiting q */
-                return -1;
-        }
-
-        return (p_load->curr_rank);
+	return (p_load->curr_rank);
 }
 

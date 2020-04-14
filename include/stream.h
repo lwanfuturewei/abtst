@@ -23,6 +23,7 @@ typedef struct abtst_stream_struct
 {
 	uint32_t rank;
 	bool used;
+	int part_id;
 	ABT_xstream xstream;
 	ABT_pool pool;	
 	ABT_sched sched;	
@@ -37,13 +38,14 @@ typedef struct abtst_stream_struct
 
 typedef struct abtst_streams_struct 
 {
-        uint32_t nr_xstreams;
-        uint32_t init_xstreams;
-        uint32_t max_xstreams;
+	uint32_t nr_xstreams;
+	uint32_t init_xstreams;
+	uint32_t max_xstreams;
 
 	abtst_stream * streams;
 	//ABT_sched *scheds;
 	//ABT_pool *pools;
+	int *partition_map;
 
 } abtst_streams;
 
@@ -85,7 +87,7 @@ static inline void abtst_stream_set_blocking(abtst_stream *stream, bool blocking
 }
 
 
-int abtst_init_streams(abtst_streams *streams);
+int abtst_init_streams(abtst_streams *streams, void *global);
 int abtst_finalize_streams(abtst_streams *streams);
 void abtst_free_streams(abtst_streams *streams);
 void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry);

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "load.h"
 
 enum mapping_type {
     MAPPING_TYPE_HASHING,
@@ -15,15 +16,20 @@ enum mapping_type {
 
 typedef struct abtst_mapping_struct
 {
+	int mapping_id;
+	int partition_id;
 	uint32_t type;
 	void *param;
 	int (*init_mapping)(void *mapping);
 	uint32_t (*mapping_to_load)(void *mapping, void *loads, void *key);
 
+	abtst_loads   loads;
+
 } abtst_mapping;
 
 
-int abtst_init_mapping(int type, abtst_mapping *mapping, void *param);
+
+int abtst_create_mapping(void *pglobal, int type, void *params, int partid);
 
 	
 #endif
