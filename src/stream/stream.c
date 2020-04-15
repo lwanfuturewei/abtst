@@ -17,30 +17,19 @@
 #include "abt_st.h"
 
 
-static int apply_stream_config(abtst_streams *streams, int nr_partitions, abtst_partition *partitions)
+static int apply_stream_config(abtst_streams *streams, int *map)
 {
 	abtst_stream *stream;
-	int i, j;
+	int i;
 	int cnt = 0;
-	abtst_partition *partition = partitions;
-	int core;
 
-	for (j = 0; j < nr_partitions; j++, partition++)
+	stream = streams->streams;
+	for (i = 0; i < env.nr_cores; i++)
 	{
-		stream = streams->streams;
-		for (i = 0; i < partition->nr_cores; i++)
+		if (map[i] >= 0)
 		{
-			core = partition->partition_cores[i];
-			if (streams->partition_map[core] >= 0)
-			{
-				printf("apply_stream_config core %d already in partition %d\n",
-						core, streams->partition_map[core]);
-				return -1;
-			}
-
-			streams->partition_map[core] = partition->partition_id;
-			stream[core].used = true;
-			stream[core].part_id = partition->partition_id;
+			stream[i].used = true;
+			stream[i].part_id = map[i];
 			cnt++;
 		}
 	}
@@ -107,19 +96,6 @@ int init_xstream(abtst_stream *stream, uint32_t init_rank)
 	return 0;
 }
 
-int init_partition_map(abtst_streams *streams)
-{
-	streams->partition_map = malloc(streams->max_xstreams * sizeof(int));
-	if (!streams->partition_map)
-	{
-		printf("init_partition_map error\n");
-		return -1;
-	}
-
-	memset(streams->partition_map, 0xff, streams->max_xstreams * sizeof(int));
-	return 0;
-}
-
 int abtst_init_streams(abtst_streams *streams, void *p_global)
 {
 	abtst_global *global = (abtst_global *)p_global;
@@ -130,19 +106,12 @@ int abtst_init_streams(abtst_streams *streams, void *p_global)
 	streams->max_xstreams = env.nr_cores;
 	streams->init_xstreams = streams->nr_xstreams = 1;
 
-	ret = init_partition_map(streams);
-	if (ret)
-	{
-		return -1;
-	}
-
 	streams->streams = calloc(streams->max_xstreams, sizeof(abtst_stream));
 	if (!streams->streams) {
-		free(streams->partition_map);
 		return -1;
 	}
 
-	ret = apply_stream_config(streams, global->nr_partitions, global->partitions);
+	ret = apply_stream_config(streams, get_partition_map(&global->partitions));
 	if (ret)
 	{
 		goto error;
@@ -161,7 +130,6 @@ int abtst_init_streams(abtst_streams *streams, void *p_global)
 
 error:
 	free(streams->streams);
-	free(streams->partition_map);
 	return -1;
 }
 
@@ -201,7 +169,6 @@ void abtst_free_streams(abtst_streams *streams)
 {
 	if (streams->streams) {
 		free(streams->streams);
-		free(streams->partition_map);
 	}
 }
 

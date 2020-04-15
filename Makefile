@@ -9,8 +9,9 @@ lib_stream := src/stream
 lib_load := src/load
 lib_mapping := src/mapping
 lib_rebalance := src/rebalance
+lib_partition := src/partition
 app := src/app
-libs := $(lib_arch) $(lib_sched) $(lib_stream) $(lib_load) $(lib_mapping) $(lib_rebalance)
+libs := $(lib_arch) $(lib_sched) $(lib_stream) $(lib_load) $(lib_mapping) $(lib_rebalance) $(lib_partition)
 
 .PHONY: all libs third_party clean $(app) $(libs) $(third_party)
 

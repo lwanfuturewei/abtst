@@ -45,7 +45,6 @@ typedef struct abtst_streams_struct
 	abtst_stream * streams;
 	//ABT_sched *scheds;
 	//ABT_pool *pools;
-	int *partition_map;
 
 } abtst_streams;
 

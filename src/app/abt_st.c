@@ -41,8 +41,7 @@ int abtst_init(abtst_global *global, void *param)
 	abtst_init_env();
 
 	/* Init partitions */
-	global->nr_partitions = sizeof(init_partitions)/sizeof(abtst_partition);
-	global->partitions = init_partitions;
+	abtst_init_partitions(&global->partitions, sizeof(init_partitions)/sizeof(abtst_partition), init_partitions);
 
 	/* Init stream */
 	abtst_init_streams(&global->streams, global);
@@ -70,11 +69,8 @@ int abtst_finalize(abtst_global *global)
 	/* Wait xstreams to join and free */
 	ret = abtst_finalize_streams(&global->streams);
 
-	/* Free loads */
-	for (i = 0; i < global->nr_mappings; i++)
-	{
-		abtst_free_loads(&global->mappings[i].loads);
-	}
+	/* Free mappings */
+	abtst_free_mappings(&global->mappings);
 
 	return ret;
 }
@@ -83,5 +79,7 @@ void abtst_free(abtst_global *global)
 {
 	/* Now it is safe to free streams */
 	abtst_free_streams(&global->streams);
+
+	abtst_free_partitions(&global->partitions);
 }
 

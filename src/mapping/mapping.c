@@ -17,11 +17,12 @@
 
 abtst_mapping * get_hash_mapping_def(void);
 
-int abtst_create_mapping(void *pglobal, int type, void *params, int partid)
+int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 {
-	abtst_global *global = (abtst_global *)pglobal;
-	int mapping_id = get_mapping_id(global);
-	abtst_mapping *mapping = &global->mappings[mapping_id];
+	abtst_global *global = (abtst_global *)p_global;
+	abtst_mappings *mappings = &global->mappings;
+	int mapping_id = get_mapping_id(mappings);
+	abtst_mapping *mapping = &mappings->mappings[mapping_id];
 	abtst_mapping *def;
 	int ret;
 
@@ -62,9 +63,22 @@ int abtst_create_mapping(void *pglobal, int type, void *params, int partid)
 	return mapping_id;
 }
 
+void abtst_free_mappings(abtst_mappings *mappings)
+{
+	int i;
+
+	/* Free loads */
+	for (i = 0; i < mappings->nr_mappings; i++)
+	{
+		abtst_free_loads(&mappings->mappings[i].loads);
+	}
+
+
+}
+
 int map_key_to_load(abtst_global *global, int mapping_id, void *key)
 {
-	abtst_mapping * mapping = &global->mappings[mapping_id];
+	abtst_mapping * mapping = &global->mappings.mappings[mapping_id];
 	abtst_loads *loads = &mapping->loads;
 	uint32_t load;
 
@@ -78,7 +92,7 @@ int map_key_to_load(abtst_global *global, int mapping_id, void *key)
  */
 int map_key_to_xstream(abtst_global *global, int mapping_id, void *key)
 {
-	abtst_mapping * mapping = &global->mappings[mapping_id];
+	abtst_mapping * mapping = &global->mappings.mappings[mapping_id];
 	abtst_loads *loads = &mapping->loads;
 	uint32_t load;
 

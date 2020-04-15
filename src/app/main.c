@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	/* Create threads */
 	//abtst_stream *stream = global.streams.streams;
-	abtst_load *load = global.mappings[mapping_id].loads.loads;
+	abtst_load *load = global.mappings.mappings[mapping_id].loads.loads;
 
 	uint64_t lba = 0;
 	for (j = 0; j < LOOPS; j++) {
