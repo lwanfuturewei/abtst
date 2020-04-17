@@ -47,7 +47,7 @@ void st_thread_func(void *arg)
         param->used = false;
 
         abtst_load_inc_ended(param->load);
-        printf("[TH%u]: s: %lu e: %lu\n", param->load->curr_rank,
-                param->load->pkt_started,  param->load->pkt_ended);
+        //printf("[TH%u]: s: %lu e: %lu\n", param->load->curr_rank,
+        //        param->load->pkt_started,  param->load->pkt_ended);
 }
 

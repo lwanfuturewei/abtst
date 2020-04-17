@@ -61,7 +61,6 @@ int abtst_init(abtst_global *global, void *param)
 int abtst_finalize(abtst_global *global)
 {
 	int ret;
-	int i;
 
 	/* Stop and free rebalance */
 	abtst_free_rebalance(&global->rebalance);

@@ -20,7 +20,7 @@
 #define HASH_BLOCK_SIZE         (64 * 1024)
 
 #define IOS_PER_LOAD            (128)
-#define TOTAL_LOADS             (16)
+#define LOOPS                   (1000)
 
 extern int map_key_to_xstream(abtst_global *global, void *key);
 extern int map_key_to_load(abtst_global *global, void *key);
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	int first = -1;
 	struct list_head *pos;
 
-	params = (io_param *)calloc(IOS_PER_LOAD * TOTAL_LOADS, sizeof(io_param));
+	params = (io_param *)calloc(IOS_PER_LOAD * 8, sizeof(io_param));
 	if (!params)
 	{
 		return -1;
@@ -100,8 +100,6 @@ int main(int argc, char *argv[])
 		abtst_stream_set_blocking(stream, true);
 	}
 
-	abtst_set_rebalance_level(&global.rebalance, 2);
-
 	stream = &global.streams.streams[first];
 
 	/* Create threads for the first stream */
@@ -126,22 +124,18 @@ int main(int argc, char *argv[])
 			lba += HASH_BLOCK_SIZE;
 			j++;
 		}
-		if (j >= (IOS_PER_LOAD * TOTAL_LOADS))
+		if (j >= (IOS_PER_LOAD * 8))
 		{
 			break;
 		}
 	}
-	printf("Total IOs: %d\n", j);
 
 	print_streams(&global.streams);
-	for (i = 0; i < 10; i++)
-	{
-		printf("after %d seconds\n", i+1);
-		sleep(1);
-		print_streams(&global.streams);
-	}
+	/* Wait for rebalance to kick in */
+	sleep(2);
+	print_streams(&global.streams);
 
-	/* Unblock streams */
+		/* Unblock streams */
 	for (i = 0; i < env.nr_cores; i++)
 	{
 		stream = &global.streams.streams[i];

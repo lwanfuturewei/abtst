@@ -8,18 +8,29 @@
 #include <inttypes.h>
 #include <string.h>
 #include <limits.h>
-#include <stdatomic.h>
+//#include <stdatomic.h>
 #include <pthread.h>
 
 #include "list.h"
 #include "spinlock.h"
 
+
+enum abtst_rebalance_level
+{
+	REBALANCE_LEVEL_NONE,
+	REBALANCE_LEVEL_IN_PARTITION,	// inside partition
+	REBALANCE_LEVEL_IN_NUMA,		// inside NUMA, between partitions
+	REBALANCE_LEVEL_BETWEEN_NUMA,	// between NUMAs
+};
+
 typedef struct abtst_rebalance_struct
 {
-        atomic_int in_use;
+	//atomic_int in_use;
 
 	pthread_t thread;
 	void *param;
+
+	int rebalance_level;
 
 	struct list_head req_q;
 	spinlock_t lock;
@@ -37,6 +48,19 @@ typedef struct abtst_reb_req_struct
 	int type;
 	int core;
 } abtst_reb_request;
+
+
+
+static inline void abtst_set_rebalance_level(abtst_rebalance *reb, int level)
+{
+	reb->rebalance_level = level;
+}
+
+static inline int abtst_get_rebalance_level(abtst_rebalance *reb)
+{
+	return reb->rebalance_level;
+}
+
 
 int abtst_init_rebalance(abtst_rebalance *reb, void *param);
 void abtst_free_rebalance(abtst_rebalance *reb);

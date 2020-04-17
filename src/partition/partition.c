@@ -75,3 +75,56 @@ void abtst_free_partitions(abtst_partitions *partitions)
 {
 	free_partition_map(partitions);
 }
+
+void abtst_reset_partition_stats(abtst_partitions *partitions)
+{
+	memset(partitions->numa_stats, 0, sizeof(abtst_partition_stat) * MAX_NUMAS * MAX_PARTITIONS);
+	memset(partitions->stats, 0, sizeof(abtst_partition_stat) * MAX_PARTITIONS);
+
+}
+
+void abtst_update_partition_stats(abtst_global *global)
+{
+	int i, j;
+	abtst_numa *numa_info;
+	abtst_stream *stream;
+	int pid;
+	abtst_partitions *partitions = &global->partitions;
+
+	abtst_reset_partition_stats(partitions);
+
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		numa_info = abtst_get_numa_info(i);
+		for (j = numa_info->start_core; j <= numa_info->end_core; j++)
+		{
+			stream = &global->streams.streams[j];
+			pid = stream->part_id;
+			if (!stream->used)
+			{
+				continue;
+			}
+			partitions->numa_stats[pid][i].qdepth += abtst_stream_get_qdepth(stream);
+			partitions->numa_stats[pid][i].used_cores++;
+
+			partitions->stats[pid].qdepth += abtst_stream_get_qdepth(stream);
+			partitions->stats[pid].used_cores++;
+		}
+	}
+	//print_partitions(partitions);
+}
+
+void print_partitions(abtst_partitions *partitions)
+{
+	int i, j;
+
+	for (i = 0; i < partitions->nr_partitions; i++)
+	{
+		printf("part %d, cores/qdepth %4d/%4d, ", i, partitions->stats[i].used_cores, partitions->stats[i].qdepth);
+		for (j = 0; j < env.nr_numas; j++)
+		{
+			printf("%4d/%4d ", partitions->numa_stats[i][j].used_cores, partitions->numa_stats[i][j].qdepth);
+		}
+		printf("\n");
+	}
+}

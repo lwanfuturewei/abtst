@@ -10,7 +10,7 @@
 #include <limits.h>
 
 
-#define MAX_NUMAS 32
+#define MAX_NUMAS 8
 
 typedef struct abtst_numa_struct
 {
@@ -52,18 +52,18 @@ static inline abtst_numa *abtst_get_numa_info(uint32_t id)
 
 static inline abtst_numa_stat *abtst_get_numa_stat(uint32_t id)
 {
-        if (id >= env.nr_numas) {
-                return NULL;
-        } else {
-                return (&env.numa_stat[id]);
-        }
+	if (id >= env.nr_numas) {
+		return NULL;
+	} else {
+		return (&env.numa_stat[id]);
+	}
 }
 
 static inline void abtst_set_numa_stat(uint32_t id, uint32_t cores, uint32_t qd)
 {
-        if (id >= env.nr_numas) {
-                return;
-        }
+	if (id >= env.nr_numas) {
+		return;
+	}
  
 	env.numa_stat[id].used_cores = cores;
 	env.numa_stat[id].avg_qdepth = qd;

@@ -48,6 +48,12 @@ typedef struct abtst_streams_struct
 
 } abtst_streams;
 
+typedef struct sort_param_s
+{
+	int ios;
+	abtst_stream *stream;
+} sort_param;
+
 
 static inline void abtst_stream_init_stat(abtst_stream *stream)
 {
@@ -85,13 +91,25 @@ static inline void abtst_stream_set_blocking(abtst_stream *stream, bool blocking
 	stream->blocking = blocking;
 }
 
+static inline int abtst_stream_get_partition_id(abtst_stream *stream)
+{
+	return stream->part_id;
+}
+
+static inline void abtst_stream_set_partition_id(abtst_stream *stream, int part_id)
+{
+	stream->part_id = part_id;
+}
+
 
 int abtst_init_streams(abtst_streams *streams, void *global);
 int abtst_finalize_streams(abtst_streams *streams);
 void abtst_free_streams(abtst_streams *streams);
+int abtst_combine_streams(abtst_stream *from, abtst_stream *to);
 void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry);
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry);
-int abtst_get_stream_ios(abtst_stream *stream);
+int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg);
+void abtst_update_streams_stat(abtst_streams *streams);
 void print_streams(abtst_streams *streams);
 
 

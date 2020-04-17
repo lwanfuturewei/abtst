@@ -172,10 +172,138 @@ void abtst_free_streams(abtst_streams *streams)
 	}
 }
 
+int abtst_combine_streams(abtst_stream *from, abtst_stream *to)
+{
+	struct list_head *pos, *n;
+	abtst_load *load;
+	int count = 0;
+	int i;
+
+	if (!from->nr_loads)
+	{
+		return 0;
+	}
+
+	abtst_load **mloads = (abtst_load **)malloc(from->nr_loads * sizeof(abtst_load *));
+	list_for_each_safe(pos, n, &from->load_q)
+	{
+		load = list_entry(pos, abtst_load, list);
+		if (abtst_load_is_migrating(load))
+		{
+			continue;
+		}
+		mloads[count++] = load;
+	}
+
+	for (i = 0; i < count; i++)
+	{
+		abtst_load_set_migrating(mloads[i], true, to->rank);
+	}
+
+	free(mloads);
+	return 0;
+}
+
 void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry)
 {
 	list_add(entry, &stream->load_q);
 	stream->nr_loads++;
+}
+
+int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
+{
+	abtst_stream *from, *to;
+	int ios = p1->ios;
+	int count = 0;
+	int i;
+	struct list_head *pos, *n;
+	abtst_load *load, *min_load = NULL;
+	int lsize, min_lsize = 0;
+
+	from = p2->stream;
+	to = p1->stream;
+	//printf("Rebalance streams from %d to %d qdepth %d\n", from->rank, to->rank, avg);
+
+	/* Check whether rebalance is needed */
+	if ((p1->ios >= avg) || (p2->ios <= avg))
+	{
+		return -1;
+	}
+
+	//if (p2->ios < MIN_IOS_TO_START_REB)
+	//{
+	//	return -1;
+	//}
+
+	if (p2->ios < (p1->ios * 2))
+	{
+		return -1;
+	}
+
+	abtst_load **mloads = (abtst_load **)malloc(from->nr_loads * sizeof(abtst_load *));
+	list_for_each_safe(pos, n, &from->load_q)
+	{
+		load = list_entry(pos, abtst_load, list);
+		if (abtst_load_is_migrating(load))
+		{
+			continue;
+		}
+
+		lsize = abtst_get_load_size(load);
+		if (!lsize)
+		{
+			continue;
+		}
+		if (!min_lsize || (lsize < min_lsize))
+		{
+			min_lsize = lsize;
+			min_load = load;
+		}
+
+		if (lsize && ((ios + lsize) <= avg))
+		{
+			/* the load is chosen for migration */
+			ios += lsize;
+			mloads[count++] = load;
+		}
+
+		if ((ios + lsize) == avg)
+		{
+			break;
+		}
+	}
+
+	if (!count && min_lsize)
+	{
+		/* Need to consider the case when from stream have a small
+		 * number of large loads.
+		 */
+		if ((p1->ios + min_lsize) < (p2->ios - min_lsize) * 1.5)
+		{
+			ios += min_lsize;
+			mloads[count++] = min_load;
+		}
+
+	}
+
+	if (!count)
+	{
+		return -1;
+	}
+
+	for (i = 0; i < count; i++)
+	{
+		abtst_remove_load_from_stream(from, &mloads[i]->list);
+		abtst_add_load_to_stream(to, &mloads[i]->list);
+
+		abtst_load_set_migrating(mloads[i], true, to->rank);
+	}
+
+	abtst_stream_update_qdepth(from, p2->ios - (ios - p1->ios));
+	abtst_stream_update_qdepth(to, ios);
+	free(mloads);
+
+	return 0;
 }
 
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry)
@@ -184,7 +312,7 @@ void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry
 	stream->nr_loads--;
 }
 
-int abtst_get_stream_ios(abtst_stream *stream)
+static int get_stream_ios(abtst_stream *stream)
 {
 	int count = 0;
 	struct list_head *pos, *n;
@@ -199,6 +327,38 @@ int abtst_get_stream_ios(abtst_stream *stream)
 	return count;
 }
 
+/*
+ * We use moving average algorithm here to calculate qdepth of a stream.
+ * This count historical data in our formula.
+ */
+static uint32_t calc_stream_qdepth(abtst_stream *stream, uint32_t ios)
+{
+	//return ((ios / 2) + (abtst_stream_get_qdepth(stream) / 2));
+	return ios;
+}
+
+void abtst_update_streams_stat(abtst_streams *streams)
+{
+	int i;
+	uint32_t ios;
+	abtst_stream *stream;
+	uint32_t qdepth;
+
+	for (i = 0; i < env.nr_cores; i++)
+	{
+		stream = &streams->streams[i];
+		if (!stream->used)
+		{
+			continue;
+		}
+
+		ios = get_stream_ios(stream);
+		qdepth = calc_stream_qdepth(stream, ios);
+		abtst_stream_update_qdepth(stream, qdepth);
+	}
+
+}
+
 void print_streams(abtst_streams *streams)
 {
 	int i;
@@ -210,6 +370,8 @@ void print_streams(abtst_streams *streams)
 		if (!stream->used) {
 			continue;
 		}
-	        printf("stream %4d, loads %4d, qdepth %8d\n", i, stream->nr_loads, stream->stat.total_qdepth);
+
+		printf("stream %4d, part %4d, loads %4d, qdepth %8d\n",
+	        	i, stream->part_id, stream->nr_loads, stream->stat.total_qdepth);
 	}
 }

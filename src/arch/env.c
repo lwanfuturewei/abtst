@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <strings.h>
 #include "env.h"
+#include "abt_st.h"
 
 
 abtst_env env;
@@ -44,6 +45,41 @@ int abtst_env_get_numa_id(uint32_t core)
 	}
 
 	return -1;
+}
+
+static void update_numa_stat(abtst_global *global, int numa_id)
+{
+	abtst_stream *stream;
+	uint32_t qdepth = 0;
+	int j;
+	abtst_numa *numa_info;
+	uint32_t cnt = 0;
+
+	numa_info = abtst_get_numa_info(numa_id);
+
+	for (j = numa_info->start_core; j <= numa_info->end_core; j++)
+	{
+		stream = &global->streams.streams[j];
+		if (!stream->used)
+		{
+			continue;
+		}
+		qdepth += abtst_stream_get_qdepth(stream);
+		cnt++;
+	}
+
+	abtst_set_numa_stat(numa_id, cnt, qdepth/cnt);
+}
+
+void abtst_update_numa_stats(abtst_global *global)
+{
+	int i;
+
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		update_numa_stat(global, i);
+	}
+
 }
 
 void print_numas(void)
