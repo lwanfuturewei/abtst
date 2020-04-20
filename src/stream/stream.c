@@ -188,26 +188,25 @@ int abtst_combine_streams(abtst_stream *from, abtst_stream *to)
 	list_for_each_safe(pos, n, &from->load_q)
 	{
 		load = list_entry(pos, abtst_load, list);
-		if (abtst_load_is_migrating(load))
-		{
-			continue;
-		}
+//		if (abtst_load_is_migrating(load))
+//		{
+//			return -1;
+//		}
 		mloads[count++] = load;
 	}
 
 	for (i = 0; i < count; i++)
 	{
+		abtst_remove_load_from_stream(from, &mloads[i]->list);
+		abtst_add_load_to_stream(to, &mloads[i]->list);
+
 		abtst_load_set_migrating(mloads[i], true, to->rank);
 	}
 
+	abtst_stream_update_qdepth(to, abtst_stream_get_qdepth(from) + abtst_stream_get_qdepth(to));
+	abtst_stream_update_qdepth(from, 0);
 	free(mloads);
 	return 0;
-}
-
-void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry)
-{
-	list_add(entry, &stream->load_q);
-	stream->nr_loads++;
 }
 
 int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
@@ -230,10 +229,10 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 		return -1;
 	}
 
-	//if (p2->ios < MIN_IOS_TO_START_REB)
-	//{
-	//	return -1;
-	//}
+//	if (p2->ios < MIN_IOS_TO_START_REB)
+//	{
+//		return -1;
+//	}
 
 	if (p2->ios < (p1->ios * 2))
 	{
@@ -244,10 +243,10 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 	list_for_each_safe(pos, n, &from->load_q)
 	{
 		load = list_entry(pos, abtst_load, list);
-		if (abtst_load_is_migrating(load))
-		{
-			continue;
-		}
+//		if (abtst_load_is_migrating(load))
+//		{
+//			continue;
+//		}
 
 		lsize = abtst_get_load_size(load);
 		if (!lsize)
@@ -304,6 +303,12 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 	free(mloads);
 
 	return 0;
+}
+
+void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry)
+{
+	list_add(entry, &stream->load_q);
+	stream->nr_loads++;
 }
 
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry)

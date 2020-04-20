@@ -21,7 +21,8 @@ static int init_load(abtst_load *load, uint32_t rank)
 
 	load->pkt_started = load->pkt_ended = 0;
 	load->init_rank = load->curr_rank = rank;
-	load->migrating = false;
+	load->dest_rank = rank;
+	//load->migrating = false;
 
 	INIT_LIST_HEAD(&load->list);
 

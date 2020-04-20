@@ -61,24 +61,28 @@ static inline void abtst_stream_init_stat(abtst_stream *stream)
 	stream->stat.sleep_nsec = 0;
 }
 
+static inline uint32_t abtst_stream_get_rank(abtst_stream *stream)
+{
+	return stream->rank;
+}
 static inline uint32_t abtst_stream_get_qdepth(abtst_stream *stream)
 {
-        return stream->stat.total_qdepth;
+	return stream->stat.total_qdepth;
 }
 
 static inline void abtst_stream_update_qdepth(abtst_stream *stream, uint32_t qdepth)
 {
-        stream->stat.total_qdepth = qdepth;
+	stream->stat.total_qdepth = qdepth;
 }
 
 static inline uint32_t abtst_stream_get_sleep_time(abtst_stream *stream)
 {
-        return stream->stat.sleep_nsec;
+	return stream->stat.sleep_nsec;
 }
 
 static inline void abtst_stream_update_sleep_time(abtst_stream *stream, uint32_t sleep_nsec)
 {
-        stream->stat.sleep_nsec += sleep_nsec;
+	stream->stat.sleep_nsec += sleep_nsec;
 }
 
 static inline bool abtst_stream_is_blocking(abtst_stream *stream)
