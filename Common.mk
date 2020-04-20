@@ -4,7 +4,7 @@ INCLUDE = $(TOP_DIR)/include
 ARGOBOTS_SRC = $(TOP_DIR)/argobots
 
 CC = gcc
-CFLAGS = -g -ggdb -Wall -O0 -I$(INCLUDE) -I$(ARGOBOTS_SRC)/include
+CFLAGS = -g -ggdb -Wall -O0 -I$(INCLUDE) -I$(ARGOBOTS_SRC)/src/include
 AR = ar
 STATICFLAGS := rcs
 LINKFLAGS = -g -O0 -ggdb $(ARGOBOTS_SRC)/src/.libs/libabt.a -lm -lpthread
