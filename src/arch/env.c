@@ -82,6 +82,32 @@ void abtst_update_numa_stats(abtst_global *global)
 
 }
 
+uint32_t abtst_get_average_qdepth(void)
+{
+	int i;
+	abtst_numa_stat *numa_stat;
+	uint32_t cores = 0, qdepth = 0;
+
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		numa_stat = abtst_get_numa_stat(i);
+		if (!numa_stat->used_cores)
+		{
+			continue;
+		}
+		cores += numa_stat->used_cores;
+		qdepth += numa_stat->avg_qdepth * numa_stat->used_cores;
+	}
+
+	if (!cores)
+	{
+		/* Not initialized */
+		return 0;
+	}
+
+	return (qdepth / cores);
+}
+
 void print_numas(void)
 {
 	int i;

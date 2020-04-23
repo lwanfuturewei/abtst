@@ -266,7 +266,7 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 			mloads[count++] = load;
 		}
 
-		if ((ios + lsize) == avg)
+		if (ios == avg)
 		{
 			break;
 		}

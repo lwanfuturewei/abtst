@@ -93,6 +93,7 @@ void abtst_init_env(void);
 void abtst_set_stopping(void);
 bool abtst_is_system_stopping(void);
 int abtst_env_get_numa_id(uint32_t core);
+uint32_t abtst_get_average_qdepth(void);
 void print_numas(void);
 
 

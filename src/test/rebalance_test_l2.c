@@ -22,24 +22,6 @@
 #define IOS_PER_LOAD            (128)
 #define TOTAL_LOADS             (16)
 
-static int partitions_0_cores[] =
-{
-	 2, 3, 4, 5, 6, 7, 8, 9,		/* Numa 0 */
-	34,35,36,37,38,39,40,41,		/* Numa 1 */
-	//66,67,68,69,70,71,72,73,		/* Numa 2 */
-	//98,99,100,101,102,103,104,105,		/* Numa 3 */
-};
-
-static abtst_partition init_partitions[] =
-{
-	{0, 16, partitions_0_cores},
-};
-
-create_params cparams =
-{
-	1, init_partitions
-};
-
 extern int map_key_to_xstream(abtst_global *global, void *key);
 extern int map_key_to_load(abtst_global *global, void *key);
 
@@ -76,7 +58,7 @@ int main(int argc, char *argv[])
 	}
 	
 	/* Initialize abt-st */
-	ret = abtst_init(&global, &cparams);
+	ret = abtst_init(&global, NULL);
 	if (ret)
 	{
 		printf("abtst_init error %d", ret);
@@ -152,16 +134,7 @@ int main(int argc, char *argv[])
 	printf("Total IOs: %d\n", j);
 
 	print_streams(&global.streams);
-	for (i = 0; i < 3; i++)
-	{
-		sleep(1);
-		printf("after %d seconds\n", i+1);
-		print_streams(&global.streams);
-	}
-
-	printf("\n\nSetting rebalance to 3\n");
-	abtst_set_rebalance_level(&global.rebalance, 3);
-	for (i = 3; i < 6; i++)
+	for (i = 0; i < 10; i++)
 	{
 		sleep(1);
 		printf("after %d seconds\n", i+1);

@@ -28,20 +28,31 @@ static int partitions_1_cores[] =
 	//106,107,108,109,110,111,112,113,		/* Numa 3 */
 };
 
-abtst_partition init_partitions[] =
+static abtst_partition init_partitions[] =
 {
 	{0, 8, partitions_0_cores},
 	{1, 8, partitions_1_cores},
 };
 
+static create_params default_params =
+{
+	2, init_partitions
+};
 
 int abtst_init(abtst_global *global, void *param)
 {
+	create_params *params = (create_params *)param;
+
+	if (!params)
+	{
+		params = &default_params;
+	}
+
 	/* Init env */
 	abtst_init_env();
 
 	/* Init partitions */
-	abtst_init_partitions(&global->partitions, sizeof(init_partitions)/sizeof(abtst_partition), init_partitions);
+	abtst_init_partitions(&global->partitions, params->nr_partitions, params->init_partitions);
 
 	/* Init stream */
 	abtst_init_streams(&global->streams, global);

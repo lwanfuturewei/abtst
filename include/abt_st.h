@@ -27,6 +27,13 @@ typedef struct abtst_global_struct
 
 } abtst_global;
 
+typedef struct create_param_struct
+{
+	int nr_partitions;
+	abtst_partition *init_partitions;
+
+} create_params;
+
 
 int abtst_init(abtst_global *global, void *param);
 int abtst_finalize(abtst_global *global);
