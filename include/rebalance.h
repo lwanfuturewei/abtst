@@ -15,6 +15,9 @@
 #include "spinlock.h"
 
 
+#define REBALANCE_DEFAULT_INTERVAL 1
+
+
 enum abtst_rebalance_level
 {
 	REBALANCE_LEVEL_NONE,
@@ -31,6 +34,7 @@ typedef struct abtst_rebalance_struct
 	void *param;
 
 	int rebalance_level;
+	int rebalance_interval;
 
 	struct list_head req_q;
 	spinlock_t lock;
@@ -59,6 +63,16 @@ static inline void abtst_set_rebalance_level(abtst_rebalance *reb, int level)
 static inline int abtst_get_rebalance_level(abtst_rebalance *reb)
 {
 	return reb->rebalance_level;
+}
+
+static inline void abtst_set_rebalance_intervall(abtst_rebalance *reb, int interval)
+{
+	reb->rebalance_interval = interval;
+}
+
+static inline int abtst_get_rebalance_interval(abtst_rebalance *reb)
+{
+	return reb->rebalance_interval;
 }
 
 

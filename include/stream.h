@@ -85,6 +85,11 @@ static inline void abtst_stream_update_sleep_time(abtst_stream *stream, uint32_t
 	stream->stat.sleep_nsec += sleep_nsec;
 }
 
+static inline void abtst_stream_reset_sleep_time(abtst_stream *stream)
+{
+	stream->stat.sleep_nsec = 0;
+}
+
 static inline bool abtst_stream_is_blocking(abtst_stream *stream)
 {
 	return stream->blocking;

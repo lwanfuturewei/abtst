@@ -10,8 +10,9 @@ lib_load := src/load
 lib_mapping := src/mapping
 lib_rebalance := src/rebalance
 lib_partition := src/partition
+lib_power := src/power
 app := src/app
-libs := $(lib_arch) $(lib_sched) $(lib_stream) $(lib_load) $(lib_mapping) $(lib_rebalance) $(lib_partition)
+libs := $(lib_arch) $(lib_sched) $(lib_stream) $(lib_load) $(lib_mapping) $(lib_rebalance) $(lib_partition) $(lib_power)
 
 .PHONY: all libs third_party clean $(app) $(libs) $(third_party)
 

@@ -14,7 +14,6 @@
 #include "abt_st.h"
 #include "st.h"
 #include "hash.h"
-#include "power.h"
 
 
 #define HASH_TABLE_BUCKETS      (1024 * 8 * 16)
@@ -163,15 +162,6 @@ int main(int argc, char *argv[])
 	printf("\n\nSetting rebalance to 3\n");
 	abtst_set_rebalance_level(&global.rebalance, 3);
 	for (i = 2; i < 4; i++)
-	{
-		sleep(1);
-		printf("after %d seconds\n", i+1);
-		print_streams(&global.streams);
-	}
-
-	printf("\n\nSetting power save\n");
-	abtst_set_power_saving_enabled(true);
-	for (i = 4; i < 8; i++)
 	{
 		sleep(1);
 		printf("after %d seconds\n", i+1);

@@ -13,7 +13,7 @@ OBJS := $(addprefix $(BUILD_DIR)/,$(patsubst %.c, %.o, $(FILES)))
 BINS = $(OUT_DIR)/abtst
 
 LINKS = $(OUT_DIR)/libload.a $(OUT_DIR)/libstream.a $(OUT_DIR)/libmapping.a \
-	$(OUT_DIR)/libsched.a $(OUT_DIR)/librebalance.a $(OUT_DIR)/libpartition.a $(OUT_DIR)/libarch.a 
+	$(OUT_DIR)/libsched.a $(OUT_DIR)/librebalance.a $(OUT_DIR)/libpartition.a $(OUT_DIR)/libpower.a $(OUT_DIR)/libarch.a 
 
 $(info link path is $(LINKFLAGS))
 

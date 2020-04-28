@@ -11,6 +11,8 @@
 
 #include "abt_st.h"
 #include "env.h"
+#include "power.h"
+
 
 static int partitions_0_cores[] =
 {
@@ -50,6 +52,9 @@ int abtst_init(abtst_global *global, void *param)
 
 	/* Init env */
 	abtst_init_env();
+
+	/* Init power saving */
+	abtst_init_power();
 
 	/* Init partitions */
 	abtst_init_partitions(&global->partitions, params->nr_partitions, params->init_partitions);

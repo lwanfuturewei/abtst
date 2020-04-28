@@ -15,6 +15,7 @@
 #include "rebalance.h"
 #include "env.h"
 #include "list.h"
+#include "power.h"
 
 
 #define REB_STREAMS 1
@@ -30,6 +31,7 @@ static int cmp_func(const void *p1, const void *p2);
 extern int init_xstream(abtst_stream *stream, uint32_t init_rank);
 extern void abtst_update_partition_stats(abtst_global *global);
 extern void abtst_update_numa_stats(abtst_global *global);
+extern void abtst_update_power_stats(abtst_global *global);
 
 
 void abtst_reb_process_add_core(abtst_global *global, int core)
@@ -242,10 +244,11 @@ static sort_param * sort_partitions(abtst_partitions *partitions, int numa_id)
 	return params;
 }
 
-static sort_param * sort_numas(void)
+static sort_param * sort_numas(int *nr_numas)
 {
 	int i;
 	abtst_numa_stat *numa_stat;
+	int cnt = 0;
 
 	sort_param *params = (sort_param *)calloc(env.nr_numas, sizeof(sort_param));
 	if (!params)
@@ -255,14 +258,23 @@ static sort_param * sort_numas(void)
 
 	for (i = 0; i < env.nr_numas; i++)
 	{
+		if (abtst_is_numa_in_ps_state(i))
+		{
+			continue;
+		}
 		numa_stat = abtst_get_numa_stat(i);
-		params[i].ios = numa_stat->avg_qdepth;
-		params[i].stream = (abtst_stream *)(uint64_t)i;
+		params[cnt].ios = numa_stat->avg_qdepth;
+		params[cnt].stream = (abtst_stream *)(uint64_t)i;
+		cnt++;
 	}
 
-	/* Sort params */
-	qsort(params, env.nr_numas, sizeof(sort_param), cmp_func);
+	if (cnt > 1)
+	{
+		/* Sort params */
+		qsort(params, cnt, sizeof(sort_param), cmp_func);
+	}
 
+	*nr_numas = cnt;
 	return params;
 }
 
@@ -434,7 +446,7 @@ static void reb_between_numas(abtst_global *global, int from, int to, uint32_t a
 {
 	int i;
 	abtst_partitions *partitions = &global->partitions;
-	abtst_numa_stat *from_nstat, *to_nstat;
+	abtst_numa_stat *to_nstat;
 	abtst_partition_stat *from_pstat, *to_pstat;
 	int count, max = 0;
 	int part_id = -1;
@@ -442,7 +454,7 @@ static void reb_between_numas(abtst_global *global, int from, int to, uint32_t a
 	abtst_stream *stream;
 
 
-	from_nstat = abtst_get_numa_stat(from);
+	//from_nstat = abtst_get_numa_stat(from);
 	to_nstat = abtst_get_numa_stat(to);
 	uint32_t ios_to_migrate = (avg_qdepth - to_nstat->avg_qdepth) * to_nstat->used_cores;
 
@@ -532,15 +544,22 @@ void abtst_reb_between_numas(abtst_global *global)
 	abtst_numa_stat *numa_stat;
 	int numa_id, from_numa, to_numa;
 	uint32_t avg_qdepth = abtst_get_average_qdepth();
+	int nr_numas = 0;
 
-	sort_param *params = sort_numas();
+	sort_param *params = sort_numas(&nr_numas);
 	if (!params)
 	{
 		return;
 	}
 
+	if (nr_numas <= 1)
+	{
+		free(params);
+		return;
+	}
+
 	to = 0;
-	from = env.nr_numas - 1;
+	from = nr_numas - 1;
 	/* Find to numa */
 	while (to < from)
 	{
@@ -588,6 +607,152 @@ void abtst_reb_between_numas(abtst_global *global)
 	reb_between_numas(global, from_numa, to_numa, avg_qdepth);
 }
 
+static int reb_combine_numas(abtst_global *global, int numa_id)
+{
+	abtst_numa *numa_info = abtst_get_numa_info(numa_id);
+	abtst_numa_stat *numa_stat = abtst_get_numa_stat(numa_id);
+	abtst_partitions *partitions = &global->partitions;
+	abtst_partition_stat *from_stat, *to_stat;
+	abtst_stream *stream;
+	int to_cores[MAX_PARTITIONS];
+	int to_numa;
+	int i, j;
+
+	if (!numa_stat->used_cores)
+	{
+		return 0;
+	}
+
+	for (i = 0; i < partitions->nr_partitions; i++)
+	{
+		from_stat = abtst_get_partition_stat(partitions, numa_id, i);
+		if (!from_stat->used_cores)
+		{
+			continue;
+		}
+
+		to_numa = -1;
+		for (j = 0; j < env.nr_numas; j++)
+		{
+			if (j == numa_id)
+			{
+				continue;
+			}
+			if (abtst_is_numa_in_ps_state(j))
+			{
+				continue;
+			}
+
+			to_stat = abtst_get_partition_stat(partitions, j, i);
+			if (to_stat->used_cores)
+			{
+				to_numa = j;
+				break;
+			}
+		}
+		if (to_numa < 0)
+		{
+			return -1;
+		}
+
+		abtst_numa *to_numa_info = abtst_get_numa_info(to_numa);
+		for (j = to_numa_info->start_core; j <= to_numa_info->end_core; j++)
+		{
+			stream = &global->streams.streams[j];
+			if (!stream->used)
+			{
+				continue;
+			}
+			if (stream->part_id == i)
+			{
+				to_cores[i] = j;
+				break;
+			}
+		}
+	}
+
+	/* Now migrate streams */
+	for (i = numa_info->start_core; i <= numa_info->end_core; i++)
+	{
+		stream = &global->streams.streams[i];
+		if (!stream->used)
+		{
+			continue;
+		}
+
+		int to_core = to_cores[stream->part_id];
+		int ret = abtst_combine_streams(stream, &global->streams.streams[to_core]);
+		if (ret)
+		{
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+/*
+ * Rebalance for power saving
+ */
+void abtst_reb_power_saving(abtst_global *global)
+{
+	int from_numa;
+	int num;
+	int i;
+
+	if (!abtst_is_power_saving_enabled())
+	{
+		return;
+	}
+
+	num = abtst_estimate_ps_numas();
+	if (num > abtst_get_numas_in_ps_state())
+	{
+		int nr_numas = 0;
+		sort_param *params = sort_numas(&nr_numas);
+		if (!params)
+		{
+			return;
+		}
+		if (nr_numas <= 1)
+		{
+			free(params);
+			return;
+		}
+
+		from_numa = (int)(uint64_t)params[0].stream;
+		if (from_numa == 0)
+		{
+			from_numa = (int)(uint64_t)params[1].stream;
+		}
+
+		if (reb_combine_numas(global, from_numa) == 0)
+		{
+			printf("NUMA %d set to power save mode\n", from_numa);
+			abtst_set_numa_ps_state(from_numa, true);
+		}
+
+		free(params);
+		abtst_update_partition_stats(global);
+		abtst_update_numa_stats(global);
+		abtst_update_power_stats(global);
+
+	}
+	else if (num < abtst_get_numas_in_ps_state())
+	{
+		/* Every time we move one NUMA out of ps state */
+		for (i = 0; i < env.nr_numas; i++)
+		{
+			if (abtst_is_numa_in_ps_state(i))
+			{
+				abtst_set_numa_ps_state(i, false);
+				break;
+			}
+
+		}
+	}
+}
+
 static void abtst_reb_update_stat(abtst_global *global)
 {
 
@@ -596,6 +761,8 @@ static void abtst_reb_update_stat(abtst_global *global)
 	abtst_update_partition_stats(global);
 
 	abtst_update_numa_stats(global);
+
+	abtst_update_power_stats(global);
 
 }
 
@@ -618,6 +785,8 @@ static void *reb_func(void *arg)
 
 		if (level >=  REBALANCE_LEVEL_BETWEEN_NUMA)
 		{
+			abtst_reb_power_saving(global);
+
 			abtst_reb_between_numas(global);
 		}
 
@@ -631,7 +800,7 @@ static void *reb_func(void *arg)
 			abtst_reb_in_partitions(global);
 		}
 
-		sleep(1);
+		sleep(abtst_get_rebalance_interval(&global->rebalance));
 	}
 
 	printf("rebalance ended\n");
@@ -647,6 +816,7 @@ int abtst_init_rebalance(abtst_rebalance *reb, void *param)
 	INIT_LIST_HEAD(&reb->req_q);
 	spinlock_init(&reb->lock);
 	reb->rebalance_level = REBALANCE_LEVEL_IN_PARTITION;
+	reb->rebalance_interval = REBALANCE_DEFAULT_INTERVAL;
 
 	ret = pthread_create(&reb->thread, NULL, reb_func, param);
 	if (ret)

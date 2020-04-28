@@ -122,14 +122,9 @@ static void sched_run(ABT_sched sched)
         run_cnt = 0;
         run_subpool = 0;
 
-        while (abtst_stream_is_blocking(stream))
-        {
-            sleep(1);
-        }
-
         /* Execute one work unit from the scheduler's pool */
         //for (i = 0; i < num_pools; i++) {
-        while (1) {
+        while (!abtst_stream_is_blocking(stream)) {
             ABT_pool pool = pools[0];
             ABT_pool_get_size(pool, &pool_size);
             
@@ -204,20 +199,22 @@ static void sched_run(ABT_sched sched)
             }
             work_count = 0;
         
-            if (run_cnt) {
-                p_data->sleep_time.tv_nsec = 100;
-            }
-            else if (p_data->sleep_time.tv_nsec < 10000 * 100) {
-                p_data->sleep_time.tv_nsec *= 2;
-            }
-
-            if (run_cnt == 0)
-            {
-                nanosleep(&p_data->sleep_time, NULL);
-                abtst_stream_update_sleep_time(stream, p_data->sleep_time.tv_nsec);
-            } 
-            //SCHED_SLEEP(run_cnt, p_data->sleep_time);
         }
+
+        if (run_cnt) {
+            p_data->sleep_time.tv_nsec = 100;
+        }
+        else if (p_data->sleep_time.tv_nsec < 10000 * 100) {
+            p_data->sleep_time.tv_nsec *= 2;
+        }
+
+        if (run_cnt == 0)
+        {
+            nanosleep(&p_data->sleep_time, NULL);
+            abtst_stream_update_sleep_time(stream, p_data->sleep_time.tv_nsec);
+        }
+        //SCHED_SLEEP(run_cnt, p_data->sleep_time);
+
     }
     printf("abtst basic sched exit\n");
 }
