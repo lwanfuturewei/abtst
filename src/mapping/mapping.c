@@ -25,11 +25,13 @@ int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 	abtst_mapping *mapping = &mappings->mappings[mapping_id];
 	abtst_mapping *def;
 	int ret;
+	int cores;
 
 	mapping->mapping_id = mapping_id;
 	mapping->partition_id = partid;
 	mapping->type = type;
 	mapping->param = params;
+	cores = global->partitions.partitions[partid].nr_cores;
 
 	switch (mapping->type)
 	{
@@ -38,7 +40,7 @@ int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 		mapping->init_mapping = def->init_mapping;
 		mapping->mapping_to_load = def->mapping_to_load;
 		//mapping->init_mapping(mapping);
-		mapping->loads.nr_loads = env.nr_cores * LOADS_PER_XSTREAM;
+		mapping->loads.nr_loads = cores * LOADS_PER_XSTREAM;
 		mapping->loads.partition_id = mapping->partition_id;
 		break;
 

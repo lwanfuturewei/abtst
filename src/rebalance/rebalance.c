@@ -244,7 +244,7 @@ static sort_param * sort_partitions(abtst_partitions *partitions, int numa_id)
 	return params;
 }
 
-static sort_param * sort_numas(int *nr_numas)
+static sort_param * sort_numas(bool sort_qdepth, bool check_ps, int *nr_numas)
 {
 	int i;
 	abtst_numa_stat *numa_stat;
@@ -258,12 +258,19 @@ static sort_param * sort_numas(int *nr_numas)
 
 	for (i = 0; i < env.nr_numas; i++)
 	{
-		if (abtst_is_numa_in_ps_state(i))
+		if (check_ps && abtst_is_numa_in_ps_state(i))
 		{
 			continue;
 		}
 		numa_stat = abtst_get_numa_stat(i);
-		params[cnt].ios = numa_stat->avg_qdepth;
+		if (sort_qdepth)
+		{
+			params[cnt].ios = numa_stat->avg_qdepth;
+		}
+		else
+		{
+			params[cnt].ios = numa_stat->used_cores;
+		}
 		params[cnt].stream = (abtst_stream *)(uint64_t)i;
 		cnt++;
 	}
@@ -522,7 +529,7 @@ static void reb_between_numas(abtst_global *global, int from, int to, uint32_t a
 		}
 
 		/* We migrate all the loads to the stream with minimum qdepth */
-		printf("migrate %d, max %d, count %d\n", ios_to_migrate, max, count);
+		//printf("migrate %d, max %d, count %d\n", ios_to_migrate, max, count);
 		printf("Migrate loads from s %d to s %d\n", stream->rank, params_to[0].stream->rank);
 		count += abtst_stream_get_qdepth(stream);
 		abtst_combine_streams(stream, params_to[0].stream);
@@ -546,7 +553,7 @@ void abtst_reb_between_numas(abtst_global *global)
 	uint32_t avg_qdepth = abtst_get_average_qdepth();
 	int nr_numas = 0;
 
-	sort_param *params = sort_numas(&nr_numas);
+	sort_param *params = sort_numas(true, true, &nr_numas);
 	if (!params)
 	{
 		return;
@@ -699,6 +706,8 @@ void abtst_reb_power_saving(abtst_global *global)
 	int from_numa;
 	int num;
 	int i;
+	int nr_numas = 0;
+	sort_param *params;
 
 	if (!abtst_is_power_saving_enabled())
 	{
@@ -708,8 +717,7 @@ void abtst_reb_power_saving(abtst_global *global)
 	num = abtst_estimate_ps_numas();
 	if (num > abtst_get_numas_in_ps_state())
 	{
-		int nr_numas = 0;
-		sort_param *params = sort_numas(&nr_numas);
+		params = sort_numas(false, true, &nr_numas);
 		if (!params)
 		{
 			return;
@@ -720,6 +728,7 @@ void abtst_reb_power_saving(abtst_global *global)
 			return;
 		}
 
+		/* Find a NUMA with lowest used cores */
 		from_numa = (int)(uint64_t)params[0].stream;
 		if (from_numa == 0)
 		{
@@ -740,16 +749,29 @@ void abtst_reb_power_saving(abtst_global *global)
 	}
 	else if (num < abtst_get_numas_in_ps_state())
 	{
-		/* Every time we move one NUMA out of ps state */
-		for (i = 0; i < env.nr_numas; i++)
+		params = sort_numas(false, false, &nr_numas);
+		if (!params)
 		{
-			if (abtst_is_numa_in_ps_state(i))
+			return;
+		}
+		if (nr_numas <= 1)
+		{
+			free(params);
+			return;
+		}
+
+		/* Find a NUMA with highest used cores in ps state */
+		for (i = 0; i < nr_numas; i++)
+		{
+			from_numa = (int)(uint64_t)params[nr_numas - 1 - i].stream;
+			if (abtst_is_numa_in_ps_state(from_numa))
 			{
-				abtst_set_numa_ps_state(i, false);
+				abtst_set_numa_ps_state(from_numa, false);
 				break;
 			}
 
 		}
+		free(params);
 	}
 }
 

@@ -138,19 +138,13 @@ static void sched_run(ABT_sched sched)
                     ABT_pool sub_pool = sub_sched_get_pool(sub_sched);
                     abtst_load *load = (abtst_load *)sub_sched_get_load(sub_sched);
 
-                    if (abtst_load_get_curr_rank(load) != abtst_stream_get_rank(stream))
-                    {
-                        //printf("migrated to %d already\n", load->dest_rank);
-                        abtst_load_update_curr_rank(load, abtst_stream_get_rank(stream));
-                    }
-
                     /* Check whether the unit should be migrated */
                     if (abtst_load_is_migrating(load)) {
                         if (load->curr_rank != load->dest_rank) {
                             printf("Load %d migrate from %d to %d\n", load->load_id, load->curr_rank, load->dest_rank);
                             //abtst_remove_load_from_stream(stream, &load->list);
                             abtst_stream *new_stream = stream + (int)(load->dest_rank - load->curr_rank);
-                            //abtst_load_update_curr_rank(load, load->dest_rank);
+                            abtst_load_update_curr_rank(load, load->dest_rank);
                             ABT_pool_push(new_stream->pool, unit);
                             continue;
                         }
