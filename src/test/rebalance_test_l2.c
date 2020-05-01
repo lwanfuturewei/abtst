@@ -100,8 +100,6 @@ int main(int argc, char *argv[])
 		abtst_stream_set_blocking(stream, true);
 	}
 
-	abtst_set_rebalance_level(&global.rebalance, 2);
-
 	stream = &global.streams.streams[first];
 
 	/* Create threads for the first stream */
@@ -133,13 +131,22 @@ int main(int argc, char *argv[])
 	}
 	printf("Total IOs: %d\n", j);
 
-	print_streams(&global.streams);
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < 2; i++)
 	{
 		sleep(1);
 		printf("after %d seconds\n", i+1);
 		print_streams(&global.streams);
 	}
+
+	abtst_set_rebalance_level(&global.rebalance, 2);
+	for (i = 2; i < 12; i++)
+	{
+		sleep(1);
+		printf("after %d seconds\n", i+1);
+		print_streams(&global.streams);
+	}
+
+
 
 	/* Unblock streams */
 	for (i = 0; i < env.nr_cores; i++)

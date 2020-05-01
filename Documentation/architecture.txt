@@ -1,0 +1,14 @@
+DESCRIPTION
+-----------
+In this project we use Kunpeng 920 servers. Kunpeng, also known as Hi16xx, is a series of 64-bit ARM microprocessors
+designed by Huawei. First introduced in 2015, those processors are geared towards highly-threaded or high-throughput
+applications. See details in "https://en.wikichip.org/wiki/hisilicon/kunpeng".
+
+NUMA: roughly corresponds to a hardware CPU die with a memory bank.
+For applications which use multiple NUMAs, we usually limit cross-NUMA memory access for better performance.
+
+
+TODOs
+-----
+Use env variables or use NUMA info to get platform and NUMA information.
+

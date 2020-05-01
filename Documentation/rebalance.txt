@@ -1,0 +1,25 @@
+DESCRIPTION
+-----------
+Level 1 rebalance: move loads inside a partition. This is the default rebalance level.
+Level 2 rebalance: move cores between paritions inside a NUMA. The rebalancer evaluates the queue depth of
+                   the partitions in one NUMA, and moves one core from one partition with highest queue depth
+                   to the partition with lowest queue depth.
+Level 3 rebalance: move loads between NUMAs. The rebalancer evaluates the queue depth of the NUMAs, and select
+                   one partition to move loads from the NUMA with highest queue depth to the NUMA with the
+                   lowest qdepth.
+
+Power saving rebalance: when the worklad is very low, we allow to put one or more NUMAs to power saving mode,
+                   The rebalancer will choose one NUMA with lowest core counts and move all loads to other 
+                   NUMAs. This is done only when level 3 rebalance is enabled and power saving is enabled.
+
+
+NOTES
+-----
+Normally we do not allow level 3 rebalance, since cross-NUMA read/write is not cost effective. But for some 
+workloads, such as compute-intensive workloads, this is not a problem. The other example is in storage system,
+with append-only write cache and write heavy workload, level 3 rebalance could also be turned on.
+
+
+TODOs
+-----
+

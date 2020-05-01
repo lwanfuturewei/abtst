@@ -1,0 +1,21 @@
+DESCRIPTION
+-----------
+A partition is a collections of cores that a mapping of LWTs runs on. That is, an application, or a component 
+of an application, normally runs inside one partition.
+
+A partition could cross multiple NUMAs.
+
+A partition could extend or contract, normally aganist another partition.
+
+Now partitions do not overlap, with the assumption that components do not share instruction/data caches.
+
+
+Examples
+--------
+For a storage system, one component (cache) runs on parition A while another component (pool) runs on 
+partition B.
+
+
+TODOs
+-----
+

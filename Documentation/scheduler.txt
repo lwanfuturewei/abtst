@@ -1,0 +1,13 @@
+DESCRIPTION
+-----------
+Base scheduler: each xstream owns a base/main scheduler to run all loads in the xstream. The scheduler
+	will sleep if there is no load or no LWT in all loads. 
+
+Sub scheduler: each load owns a sub scheduler which schedules LWTs inside the load. This scheduler
+	will yeild to base scheduler after running some LWTs.
+
+
+
+TODOs
+-----
+

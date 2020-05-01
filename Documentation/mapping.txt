@@ -1,0 +1,16 @@
+DESCRIPTION
+-----------
+All LWTs are mapped to "loads". LWTs in the same load run inside one xstream (core). Instructions inside same 
+core are serialized and do not need locks.
+
+
+Examples
+--------
+Hash mapping: maps LWTs to a hash bucket according to its Volume ID and LBA. A load can be LWTs in one or several 
+buckets. We realize "lockless" with loads and mappings.
+
+
+TODOs
+-----
+Other mapping schemes.
+

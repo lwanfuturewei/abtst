@@ -1,0 +1,11 @@
+DESCRIPTION
+-----------
+According to our previous research:
+1) Power consumption includes power consumed by CPUs and power consumed by dies;
+2) Workloads applying evenly across CPUs will consume less power than applying to one CPU;
+3) When workload is very low, we can save power by putting a die and its CPUs in power saving mode.
+ 
+
+TODOs
+-----
+
