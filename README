@@ -32,9 +32,9 @@ policies:
     3) stackable schedulers: each "load" owns a sub-scheduler which schedules IOs
                  inside the "load". The main scheduler for xstream schedules which
                  load to run for all the "loads" in the same xstream.
-                 
-       
-                 
+
+
+
 Getting Started
 ==================
 1) Get source code 
@@ -47,11 +47,15 @@ Getting Started
    make all
 3) run application
    ./build/abtst
+4) run test
+   cd src/test
+   make
+   ../../build/test
 
-     
-     
+
+
 TODO List
 ==================
-1) rebalance between NUMAs
-2) get/set NUMA configs
-3) test cases 
+1) get/set NUMA configs
+2) test cases
+ 
