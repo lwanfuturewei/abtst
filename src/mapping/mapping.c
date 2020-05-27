@@ -16,6 +16,7 @@
 
 
 abtst_mapping * get_hash_mapping_def(void);
+abtst_mapping * get_random_mapping_def(void);
 
 int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 {
@@ -44,6 +45,14 @@ int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 		mapping->loads.partition_id = mapping->partition_id;
 		break;
 
+	case MAPPING_TYPE_RANDOM:
+		def = get_random_mapping_def();
+		mapping->init_mapping = def->init_mapping;
+		mapping->mapping_to_load = def->mapping_to_load;
+		mapping->loads.nr_loads = cores * LOADS_PER_XSTREAM_FOR_RANDOM;
+		mapping->loads.partition_id = mapping->partition_id;
+		break;
+
 	default:
         return -1;
 
@@ -56,6 +65,7 @@ int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 		return -1;
 	}
 
+	/* Init mapping */
 	ret = mapping->init_mapping(mapping);
 	if (ret)
 	{

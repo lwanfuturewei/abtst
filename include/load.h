@@ -14,7 +14,8 @@
 #include "abt.h"
 
 
-#define LOADS_PER_XSTREAM 64
+#define LOADS_PER_XSTREAM 32
+#define LOADS_PER_XSTREAM_FOR_RANDOM 4
 
 typedef struct abtst_load_struct 
 {

@@ -13,7 +13,8 @@
 #define MAX_MAPPINGS 8
 
 enum mapping_type {
-    MAPPING_TYPE_HASHING,
+	MAPPING_TYPE_HASHING,
+	MAPPING_TYPE_RANDOM,
 };
 
 typedef struct abtst_mapping_struct

@@ -73,6 +73,15 @@ int main(int argc, char *argv[])
 	}
 	int mapping_id = ret;
 
+	ret = abtst_create_mapping(&global, MAPPING_TYPE_RANDOM, NULL, 1);
+	if (ret < 0)
+	{
+		printf("abtst_create_mapping error %d", ret);
+		goto EXIT1;
+	}
+	//int mapping_id_2 = ret;
+
+
 	/* Initialize storage system */
 	ret = st_init();
 	if (ret)
