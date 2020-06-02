@@ -49,7 +49,7 @@ int abtst_create_mapping(void *p_global, int type, void *params, int partid)
 		def = get_random_mapping_def();
 		mapping->init_mapping = def->init_mapping;
 		mapping->mapping_to_load = def->mapping_to_load;
-		mapping->loads.nr_loads = cores * LOADS_PER_XSTREAM_FOR_RANDOM;
+		mapping->loads.nr_loads = env.nr_cores / 2;
 		mapping->loads.partition_id = mapping->partition_id;
 		break;
 

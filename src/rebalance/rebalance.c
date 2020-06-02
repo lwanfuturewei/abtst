@@ -10,11 +10,11 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "abt.h"
+//#include "abt.h"
 #include "abt_st.h"
 #include "rebalance.h"
 #include "env.h"
-#include "list.h"
+//#include "list.h"
 #include "power.h"
 
 
@@ -348,6 +348,8 @@ static void reb_in_numa(abtst_global *global, int numa_id)
 	int part_id, from_pid = -1, to_pid = -1;
 	int from, to;
 	int ret;
+	int i;
+	abtst_stream *from_stream, *to_stream;
 
 	params = sort_partitions(partitions, numa_id);
 	if (!params)
@@ -384,7 +386,7 @@ static void reb_in_numa(abtst_global *global, int numa_id)
 		part_id = (int)(uint64_t)params[to].stream;
 		stat = &partitions->numa_stats[part_id][numa_id];
 
-		if ((stat->qdepth / (stat->used_cores + 1) > numa_stat->avg_qdepth) &&
+		if ((stat->qdepth / (stat->used_cores + 1) >= numa_stat->avg_qdepth) &&
 			(stat->qdepth / stat->used_cores > MIN_IOS_TO_START_REB))
 		{
 			to_pid = part_id;
@@ -406,8 +408,26 @@ static void reb_in_numa(abtst_global *global, int numa_id)
 		return;
 	}
 
+	from_stream = params[0].stream;
+	to_stream = params[1].stream;
+	stat = &partitions->numa_stats[from_pid][numa_id];
+	for (i = 0; i < stat->used_cores; i++)
+	{
+		abtst_stream *stream = params[i].stream;
+		if (stream->part_id != global->partitions.partition_map[stream->rank])
+		{
+			from_stream = stream;
+			if (i >= 1)
+			{
+				to_stream = params[0].stream;
+			}
+			break;
+		}
+	}
+
+
 	/* Combine two streams with lowest qdepth */
-	ret = abtst_combine_streams(params[0].stream, params[1].stream);
+	ret = abtst_combine_streams(from_stream, to_stream);
 	if (ret)
 	{
 		free(params);
@@ -416,8 +436,8 @@ static void reb_in_numa(abtst_global *global, int numa_id)
 
 	/* Move a stream to destination partition */
 	printf("NUMA %d: move stream %d from partition %d to partition %d\n",
-			numa_id, params[0].stream->rank, from_pid, to_pid);
-	abtst_stream_set_partition_id(params[0].stream, to_pid);
+			numa_id, from_stream->rank, from_pid, to_pid);
+	abtst_stream_set_partition_id(from_stream, to_pid);
 
 	abtst_update_partition_stats(global);
 	free(params);
@@ -785,6 +805,8 @@ static void abtst_reb_update_stat(abtst_global *global)
 	abtst_update_numa_stats(global);
 
 	abtst_update_power_stats(global);
+
+	print_stream_qdepth(&global->streams);
 
 }
 

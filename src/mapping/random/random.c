@@ -37,5 +37,5 @@ uint32_t random_mapping_to_load(void *map, void *ploads, void *key)
 	//abtst_mapping *mapping = (abtst_mapping *)map;
 	abtst_loads *loads = (abtst_loads *)ploads;
 
-	return (rand() / loads->nr_loads);
+	return (rand() % loads->nr_loads);
 }

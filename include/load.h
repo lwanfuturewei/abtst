@@ -10,12 +10,12 @@
 #include <limits.h>
 
 #include "list.h"
-#include "stream.h"
 #include "abt.h"
+#include "abtst_stream.h"
 
 
 #define LOADS_PER_XSTREAM 32
-#define LOADS_PER_XSTREAM_FOR_RANDOM 4
+
 
 typedef struct abtst_load_struct 
 {

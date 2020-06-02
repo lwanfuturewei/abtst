@@ -12,9 +12,10 @@
 #include "mapping.h"
 #include "load.h"
 #include "env.h"
-#include "stream.h"
+#include "abtst_stream.h"
 #include "sched.h"
 #include "abt_st.h"
+#include "abtst_util.h"
 
 
 static int apply_stream_config(abtst_streams *streams, int *map)
@@ -378,5 +379,57 @@ void print_streams(abtst_streams *streams)
 
 		printf("stream %4d, part %4d, loads %4d, qdepth %8d\n",
 	        	i, stream->part_id, stream->nr_loads, stream->stat.total_qdepth);
+	}
+}
+
+void print_stream_qdepth(abtst_streams *streams)
+{
+	int i, j, k;
+	abtst_stream *stream;
+//	int max = 0;
+	int level, min_level = 10;
+
+//	stream = &streams->streams[0];
+//	for (i = 0; i < streams->max_xstreams; i++, stream++)
+//	{
+//		if (!stream->used) {
+//			continue;
+//		}
+//
+//		if (stream->stat.total_qdepth > max)
+//		{
+//			max = stream->stat.total_qdepth;
+//		}
+//	}
+//
+//	if (!max)
+//	{
+//		return;
+//	}
+//
+//	level = (max + min_level * 10 - 1) / min_level;
+	level = min_level;
+
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		printf("NUMA %d\n", i);
+
+		for (j = env.numa_info[i].start_core; j <= env.numa_info[i].end_core; j++)
+		{
+			stream = &streams->streams[j];
+			if (!stream->used) {
+				continue;
+			}
+
+			set_color(stream->part_id);
+			printf("core %4d: ", j);
+			for (k = 0; k < (stream->stat.total_qdepth + level-1)/level; k++)
+			{
+				printf("*");
+			}
+			printf("\n");
+		}
+
+		reset_color();
 	}
 }

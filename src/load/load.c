@@ -11,7 +11,7 @@
 #include "env.h"
 #include "mapping.h"
 #include "load.h"
-#include "stream.h"
+#include "abtst_stream.h"
 #include "sched.h"
 
 

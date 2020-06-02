@@ -23,7 +23,7 @@
 #define TOTAL_LOADS             (16)
 
 extern int map_key_to_xstream(abtst_global *global, void *key);
-extern int map_key_to_load(abtst_global *global, void *key);
+extern int map_key_to_load(abtst_global *global, int mapping_id, void *key);
 
 
 int main(int argc, char *argv[])
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	abtst_load *load;
 	uint64_t lba = 0;
 	int i, j = 0;
-	io_param *params;
+	io_param *params, *params2;
 	int first = -1;
 	struct list_head *pos;
 
@@ -44,6 +44,13 @@ int main(int argc, char *argv[])
 	{
 		return -1;
 	}
+	params2 = (io_param *)calloc(2048, sizeof(io_param));
+	if (!params2)
+	{
+		free(params);
+		return -1;
+	}
+
 	//t.tv_sec = 0;
 	//t.tv_nsec = 1000;
 	memset(&global, 0, sizeof(abtst_global));
@@ -75,6 +82,14 @@ int main(int argc, char *argv[])
 		printf("abtst_create_mapping error %d", ret);
 		goto EXIT1;
 	}
+
+	ret = abtst_create_mapping(&global, MAPPING_TYPE_RANDOM, NULL, 1);
+	if (ret < 0)
+	{
+		printf("abtst_create_mapping error %d", ret);
+		goto EXIT1;
+	}
+	int mapping_id_2 = ret;
 
 	/* Initialize storage system */
 	ret = st_init();
@@ -146,7 +161,32 @@ int main(int argc, char *argv[])
 		print_streams(&global.streams);
 	}
 
+	/* Add IOs to parition 1 */
+	load = global.mappings.mappings[mapping_id_2].loads.loads;
+	for (i = 0; i < 2048; i++) {
+		params2[i].used = true;
+		params2[i].key.lba = lba;
+		params2[i].key.volumeId = 1;
 
+		int l = map_key_to_load(&global, mapping_id_2, &params2[i].key);
+		params2[i].load = &load[l];
+		//printf("loop %d lba 0x%lx es %d load %d\n", j, params2[i].key.lba, load[l].curr_rank, l);
+		ret = ABT_thread_create(load[l].pool, st_thread_func, (void *)&params2[i], ABT_THREAD_ATTR_NULL, NULL);
+		if (ret) {
+			printf("ABT_thread_create error %d\n", ret);
+			goto EXIT1;
+		}
+		abtst_load_inc_started(&load[l]);
+
+		lba += HASH_BLOCK_SIZE;
+	}
+
+	for (i = 12; i < 22; i++)
+	{
+		sleep(1);
+		printf("after %d seconds\n", i+1);
+		print_streams(&global.streams);
+	}
 
 	/* Unblock streams */
 	for (i = 0; i < env.nr_cores; i++)
@@ -188,6 +228,7 @@ EXIT1:
 	abtst_free(&global);
 
 	free(params);
+	free(params2);
 	return 0;
 }
 

@@ -10,7 +10,7 @@
 
 #include "mapping.h"
 #include "load.h"
-#include "stream.h"
+#include "abtst_stream.h"
 #include "rebalance.h"
 #include "partition.h"
 

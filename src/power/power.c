@@ -5,9 +5,9 @@
 #include <strings.h>
 
 #include "env.h"
-#include "stream.h"
 #include "abt_st.h"
 #include "power.h"
+//#include "abtst_stream.h"
 
 
 abtst_power power;

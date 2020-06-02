@@ -41,7 +41,7 @@ create_params cparams =
 };
 
 extern int map_key_to_xstream(abtst_global *global, void *key);
-extern int map_key_to_load(abtst_global *global, void *key);
+extern int map_key_to_load(abtst_global *global, int mapping_id, void *key);
 
 
 int main(int argc, char *argv[])
