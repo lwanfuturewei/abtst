@@ -19,7 +19,7 @@
 #define HASH_TABLE_BUCKETS      (1024 * 8 * 16)
 #define HASH_BLOCK_SIZE         (64 * 1024)
 
-#define PARALLEL_IOS            (128)
+#define PARALLEL_IOS            (128 * 8)
 #define LOOPS                   (1000)
 
 //extern int map_key_to_xstream(abtst_global *global, void *key);
@@ -32,8 +32,9 @@ int main(int argc, char *argv[])
 	int ret;
 	struct timespec t;
 
-	int i, j;
+	int i;
 	io_param *params;
+	int cnt = 0;
 
 	params = (io_param *)calloc(PARALLEL_IOS, sizeof(io_param));
 	if (!params)
@@ -90,13 +91,17 @@ int main(int argc, char *argv[])
 		goto EXIT1;
 	}
 
+	abtst_set_rebalance_verbose(&global.rebalance, 2);
+	abtst_set_rebalance_level(&global.rebalance, 1);
 
 	/* Create threads */
 	//abtst_stream *stream = global.streams.streams;
 	abtst_load *load = global.mappings.mappings[mapping_id].loads.loads;
 
 	uint64_t lba = 0;
-	for (j = 0; j < LOOPS; j++) {
+	time_t sec = time(NULL);
+	while (1)
+	{
 		for (i = 0; i < PARALLEL_IOS; i++) {
 			if (params[i].used) {
 				continue;
@@ -124,8 +129,15 @@ int main(int argc, char *argv[])
 			abtst_load_inc_started(&load[l]);
 
 			lba += HASH_BLOCK_SIZE;
+			cnt++;
 		}
 		nanosleep(&t, NULL);
+
+		if ((time(NULL) - sec) > 10)
+		{
+			printf("IOPS = %d\n", cnt/10);
+			break;
+		}
 	}
 
 EXIT1:

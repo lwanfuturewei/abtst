@@ -119,8 +119,10 @@ void abtst_add_load_to_stream(abtst_stream *stream, struct list_head *entry);
 void abtst_remove_load_from_stream(abtst_stream *stream, struct list_head *entry);
 int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg);
 void abtst_update_streams_stat(abtst_streams *streams);
+void abtst_reset_streams_stat(abtst_streams *streams);
 void print_streams(abtst_streams *streams);
 void print_stream_qdepth(abtst_streams *streams);
+void print_stream_sleeptime(abtst_streams *streams, int interval);
 
 
 #endif

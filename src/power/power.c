@@ -44,7 +44,6 @@ static void update_power_stat(abtst_global *global, int numa_id)
 			continue;
 		}
 		msec += abtst_stream_get_sleep_time(stream) / 1000000;
-		abtst_stream_reset_sleep_time(stream);
 		cnt++;
 	}
 

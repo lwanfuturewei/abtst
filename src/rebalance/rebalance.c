@@ -293,7 +293,8 @@ static void reb_in_partition(abtst_global *global, int numa_id, int partition_id
 	int ret;
 	sort_param * params;
 
-	while (++loop < stat->used_cores)
+	//while (++loop < stat->used_cores)
+	while (loop++ < 1)	// every time rebalance one pair
 	{
 		params = sort_streams(global, numa_id, partition_id);
 		if (!params)
@@ -301,7 +302,15 @@ static void reb_in_partition(abtst_global *global, int numa_id, int partition_id
 			return;
 		}
 
-		if (params[stat->used_cores - 1].ios < MIN_IOS_TO_START_REB)
+		/* This should be configurable */
+		if ((params[stat->used_cores - 1].ios - params[0].ios) < MIN_IOS_TO_START_REB)
+		{
+			free(params);
+			return;
+		}
+
+		/* This should be optional */
+		if (!abtst_stream_get_sleep_time(params[0].stream))
 		{
 			free(params);
 			return;
@@ -797,16 +806,23 @@ void abtst_reb_power_saving(abtst_global *global)
 
 static void abtst_reb_update_stat(abtst_global *global)
 {
+	int verbose = abtst_get_rebalance_verbose(&global->rebalance);
 
 	abtst_update_streams_stat(&global->streams);
+	if (verbose >= 1)
+	{
+		print_stream_qdepth(&global->streams);
+	}
+	if (verbose >= 2)
+	{
+		print_stream_sleeptime(&global->streams, abtst_get_rebalance_interval(&global->rebalance));
+	}
 
 	abtst_update_partition_stats(global);
 
 	abtst_update_numa_stats(global);
 
 	abtst_update_power_stats(global);
-
-	print_stream_qdepth(&global->streams);
 
 }
 
@@ -844,6 +860,12 @@ static void *reb_func(void *arg)
 			abtst_reb_in_partitions(global);
 		}
 
+		if ((abtst_get_rebalance_verbose(&global->rebalance) >= 1) && (level > REBALANCE_LEVEL_NONE))
+		{
+			print_stream_qdepth(&global->streams);
+		}
+
+		abtst_reset_streams_stat(&global->streams);
 		sleep(abtst_get_rebalance_interval(&global->rebalance));
 	}
 
@@ -861,6 +883,7 @@ int abtst_init_rebalance(abtst_rebalance *reb, void *param)
 	spinlock_init(&reb->lock);
 	reb->rebalance_level = REBALANCE_LEVEL_IN_PARTITION;
 	reb->rebalance_interval = REBALANCE_DEFAULT_INTERVAL;
+	reb->verbose = 0;
 
 	ret = pthread_create(&reb->thread, NULL, reb_func, param);
 	if (ret)

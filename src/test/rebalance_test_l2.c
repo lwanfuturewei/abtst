@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
 	}
 
 	abtst_set_rebalance_level(&global.rebalance, 2);
+	abtst_set_rebalance_verbose(&global.rebalance, 2);
 	for (i = 2; i < 12; i++)
 	{
 		sleep(1);

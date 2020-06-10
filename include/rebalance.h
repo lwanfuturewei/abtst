@@ -38,6 +38,8 @@ typedef struct abtst_rebalance_struct
 
 	struct list_head req_q;
 	spinlock_t lock;
+
+	int verbose;
 } abtst_rebalance;
 
 enum abtst_reb_req_type
@@ -73,6 +75,16 @@ static inline void abtst_set_rebalance_intervall(abtst_rebalance *reb, int inter
 static inline int abtst_get_rebalance_interval(abtst_rebalance *reb)
 {
 	return reb->rebalance_interval;
+}
+
+static inline int abtst_get_rebalance_verbose(abtst_rebalance *reb)
+{
+	return reb->verbose;
+}
+
+static inline void abtst_set_rebalance_verbose(abtst_rebalance *reb, int verbose)
+{
+	reb->verbose = verbose;
 }
 
 

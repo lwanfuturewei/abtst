@@ -213,7 +213,7 @@ int abtst_combine_streams(abtst_stream *from, abtst_stream *to)
 int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 {
 	abtst_stream *from, *to;
-	int ios = p1->ios;
+	int ios = p1->ios, from_ios = p2->ios;
 	int count = 0;
 	int i;
 	struct list_head *pos, *n;
@@ -235,7 +235,7 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 //		return -1;
 //	}
 
-	if (p2->ios < (p1->ios * 2))
+	if (p2->ios < (p1->ios * 1.5))
 	{
 		return -1;
 	}
@@ -243,6 +243,22 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 	abtst_load **mloads = (abtst_load **)malloc(from->nr_loads * sizeof(abtst_load *));
 	list_for_each_safe(pos, n, &from->load_q)
 	{
+		load = list_entry(pos, abtst_load, list);
+		lsize = abtst_get_load_size(load);
+		if ((load->curr_rank != load->init_rank)
+				/*&& ((from_ios - lsize) >= avg) && ((ios + lsize) <= avg)*/)
+		{
+			/* the load is chosen for migration */
+			ios += lsize;
+			mloads[count++] = load;
+			from_ios -= lsize;
+		}
+	}
+
+	if (!count)
+	{
+		list_for_each_safe(pos, n, &from->load_q)
+		{
 		load = list_entry(pos, abtst_load, list);
 //		if (abtst_load_is_migrating(load))
 //		{
@@ -260,16 +276,23 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 			min_load = load;
 		}
 
-		if (lsize && ((ios + lsize) <= avg))
+		if (lsize && ((from_ios - lsize) >= avg) && ((ios + lsize) <= avg))
 		{
 			/* the load is chosen for migration */
 			ios += lsize;
 			mloads[count++] = load;
+			from_ios -= lsize;
+		}
+
+		if ((count >= LOADS_PER_XSTREAM / 16) && to->nr_loads)
+		{
+			break;
 		}
 
 		if (ios == avg)
 		{
 			break;
+		}
 		}
 	}
 
@@ -295,7 +318,6 @@ int abtst_rebalance_streams(sort_param *p1, sort_param *p2, uint32_t avg)
 	{
 		abtst_remove_load_from_stream(from, &mloads[i]->list);
 		abtst_add_load_to_stream(to, &mloads[i]->list);
-
 		abtst_load_set_migrating(mloads[i], true, to->rank);
 	}
 
@@ -365,6 +387,21 @@ void abtst_update_streams_stat(abtst_streams *streams)
 
 }
 
+void abtst_reset_streams_stat(abtst_streams *streams)
+{
+	int i;
+	abtst_stream *stream;
+
+	stream = &streams->streams[0];
+	for (i = 0; i < streams->max_xstreams; i++, stream++)
+	{
+		if (!stream->used) {
+			continue;
+		}
+		abtst_stream_reset_sleep_time(stream);
+	}
+}
+
 void print_streams(abtst_streams *streams)
 {
 	int i;
@@ -410,6 +447,7 @@ void print_stream_qdepth(abtst_streams *streams)
 //	level = (max + min_level * 10 - 1) / min_level;
 	level = min_level;
 
+	printf("\n\nDisplay Queue Depth:\n");
 	for (i = 0; i < env.nr_numas; i++)
 	{
 		printf("NUMA %d\n", i);
@@ -433,3 +471,43 @@ void print_stream_qdepth(abtst_streams *streams)
 		reset_color();
 	}
 }
+
+void print_stream_sleeptime(abtst_streams *streams, int interval)
+{
+	int i, j, k;
+	abtst_stream *stream;
+	int level;
+
+	printf("\n\nDisplay sleep time:\n");
+	for (i = 0; i < env.nr_numas; i++)
+	{
+		printf("NUMA %d\n", i);
+
+		for (j = env.numa_info[i].start_core; j <= env.numa_info[i].end_core; j++)
+		{
+			stream = &streams->streams[j];
+			if (!stream->used) {
+				continue;
+			}
+
+			set_color(stream->part_id);
+			printf("core %4d: ", j);
+			if (abtst_stream_get_sleep_time(stream))
+			{
+				level = abtst_stream_get_sleep_time(stream) / (100000000 * interval) + 1;
+			}
+			else
+			{
+				level = 0;
+			}
+			for (k = 0; k < level; k++)
+			{
+				printf("*");
+			}
+			printf("\n");
+		}
+
+		reset_color();
+	}
+}
+
