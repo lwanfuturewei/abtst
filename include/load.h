@@ -22,6 +22,7 @@ typedef struct abtst_load_struct
 	struct list_head list;
 	
 	int load_id;
+	bool used;
 
 	uint64_t pkt_started;
 	uint64_t pkt_ended;

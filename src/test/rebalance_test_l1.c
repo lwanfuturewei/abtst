@@ -132,10 +132,13 @@ int main(int argc, char *argv[])
 
 	print_streams(&global.streams);
 	/* Wait for rebalance to kick in */
-	sleep(2);
-	print_streams(&global.streams);
+	for (i = 0; i < 10; i++)
+	{
+		sleep(1);
+		print_streams(&global.streams);
+	}
 
-		/* Unblock streams */
+	/* Unblock streams */
 	for (i = 0; i < env.nr_cores; i++)
 	{
 		stream = &global.streams.streams[i];

@@ -40,7 +40,7 @@ void st_thread_func(void *arg)
 	 * 3) update metadata (hash table/tree.
 	 */
         int i, v = 0;
-        for (i = 0; i < 100000; i++) {
+        for (i = 0; i < 10000; i++) {
                 v += 1;
                 v *= 2;
         }

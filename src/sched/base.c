@@ -151,12 +151,13 @@ static void sched_run(ABT_sched sched)
                     }
 
                     ABT_pool_get_size(sub_pool, &subpool_size);
-                    if (subpool_size) {
+                    if (subpool_size || !load->used) {
                         run_cnt++;
+                        load->used = true;
+                        /* Should not run sub_sched when there is no item in subpool */
+                        ABT_xstream_run_unit(unit, pool);
                     }
 
-                    /* Should not run sub_sched when there is no item in subpool */
-                    ABT_xstream_run_unit(unit, pool);
                     run_subpool++;
 
                     if (!abtst_is_system_stopping()) {
